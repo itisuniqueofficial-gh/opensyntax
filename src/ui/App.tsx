@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import {Box, Text, useApp, useStdout} from 'ink';
 import {saveConfig} from '../config/config-store.js';
 import type {OpenSyntaxConfig} from '../config/schema.js';
-import {ChatScreen} from './ChatScreen.js';
-import {SetupModal} from './SetupModal.js';
+import {ChatScreen} from './screens/ChatScreen.js';
+import {SetupModal} from './components/SetupModal.js';
 
 type AppProps = {
 	initialConfig: OpenSyntaxConfig | null;
