@@ -13,7 +13,7 @@ import {getProviderDefinition, isProviderSupported, providerIds} from './provide
 import {App} from './ui/App.js';
 import {logger} from './utils/logger.js';
 
-const packageVersion = '0.2.0';
+const packageVersion = '0.2.1';
 
 const program = new Command()
 	.name('opensyntax')

@@ -1,6 +1,7 @@
 import React from 'react';
 import {Box, Text} from 'ink';
 import {highlight} from 'cli-highlight';
+import {truncateText, wrapText} from '../../utils/terminal.js';
 
 const languageMap: Record<string, string> = {
 	js: 'javascript',
@@ -16,14 +17,16 @@ const languageMap: Record<string, string> = {
 	md: 'markdown'
 };
 
-export function CodeBlock({code, language}: {code: string; language?: string}) {
+export function CodeBlock({code, language, width}: {code: string; language?: string; width: number}) {
 	const normalized = language ? languageMap[language.toLowerCase()] ?? language.toLowerCase() : 'text';
-	const rendered = highlight(code.replace(/\n$/, ''), {language: normalized, ignoreIllegals: true});
+	const innerWidth = Math.max(1, width - 4);
+	const highlighted = highlight(code.replace(/\n$/, ''), {language: normalized, ignoreIllegals: true});
+	const lines = highlighted.split('\n').flatMap(line => wrapText(line, innerWidth, 6)).slice(0, 40);
 
 	return (
-		<Box borderStyle="round" borderColor="gray" paddingX={1} flexDirection="column" marginY={1}>
-			<Text color="gray">{normalized}</Text>
-			<Text>{rendered}</Text>
+		<Box width={width} borderStyle="single" borderColor="gray" paddingX={1} flexDirection="column" marginY={1} overflow="hidden">
+			<Text color="gray">{truncateText(normalized, innerWidth)}</Text>
+			{lines.map((line, index) => <Text key={index}>{truncateText(line, innerWidth)}</Text>)}
 		</Box>
 	);
 }

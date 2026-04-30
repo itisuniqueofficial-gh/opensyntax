@@ -8,10 +8,11 @@ import {createProvider} from '../../providers/openai-compatible.js';
 import type {ChatUsage} from '../../providers/types.js';
 import {commandHelp, isCommand, parseCommand} from '../../chat/commands.js';
 import {createMessage, toProviderMessages, type UiMessage} from '../../chat/chat-session.js';
-import {getTerminalLayout} from '../../utils/terminal.js';
+import {clamp, getTerminalLayout} from '../../utils/terminal.js';
 import {Header} from '../components/Header.js';
-import {MessageList} from '../components/MessageList.js';
-import {StatusPanel} from '../components/StatusPanel.js';
+import {ChatPanel} from '../components/ChatPanel.js';
+import {Sidebar} from '../components/Sidebar.js';
+import {StatusBar} from '../components/StatusBar.js';
 import {InputBox} from '../components/InputBox.js';
 import {SetupModal} from '../components/SetupModal.js';
 import {CommandHelp} from '../components/CommandHelp.js';
@@ -36,15 +37,19 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 	const lastCtrlCRef = useRef(0);
 	const provider = useMemo(() => createProvider(config), [config]);
 	const width = stdout.columns || 100;
-	const height = Math.max(stdout.rows || 28, 16);
+	const height = stdout.rows || 28;
 	const layout = getTerminalLayout(width, height);
 	const compact = layout === 'compact';
+	const showSidebar = width >= 120;
 	const headerHeight = 3;
-	const inputHeight = 5;
-	const footerHeight = 1;
-	const contentHeight = Math.max(6, height - headerHeight - inputHeight - footerHeight - (error ? 3 : 0));
-	const statusHeight = layout === 'wide' ? contentHeight : compact ? 5 : 8;
-	const chatHeight = layout === 'wide' ? contentHeight : Math.max(5, contentHeight - statusHeight);
+	const helpHeight = 1;
+	const statusHeight = showSidebar ? 0 : 1;
+	const inputHeight = compact ? 4 : 5;
+	const errorHeight = error ? 3 : 0;
+	const bodyHeight = Math.max(1, height - headerHeight - helpHeight - statusHeight - inputHeight - errorHeight);
+	const sidebarWidth = showSidebar ? clamp(Math.floor(width * 0.28), 30, 36) : 0;
+	const chatWidth = showSidebar ? Math.max(40, width - sidebarWidth) : width;
+	const status = busy ? 'Working' : 'Ready';
 
 	useInput((input, key) => {
 		const shortcut = input.toLowerCase();
@@ -117,7 +122,7 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 		if (name === '/clear' || name === '/reset') return setMessages([]);
 		if (name === '/config') return setShowConfig(true);
 		if (name === '/help') return system(commandHelp.join('\n'));
-		if (name === '/about') return system('OpenSyntax v0.2.0\nFullscreen terminal AI chatbot CLI.');
+	if (name === '/about') return system('OpenSyntax v0.2.1\nFullscreen terminal AI chatbot CLI.');
 		if (name === '/provider') return system(`Provider: ${providerLabels[config.provider]}\nBase URL: ${config.baseUrl}`);
 		if (name === '/model') {
 			if (!arg) return system(`Current model: ${config.model}`);
@@ -173,21 +178,25 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 
 	return (
 		<Box width={width} height={height} flexDirection="column">
-			<Header config={config} compact={compact} />
-			{layout === 'wide' ? (
-				<Box height={contentHeight} flexDirection="row">
-					<Box width={Math.max(60, width - 34)}><MessageList messages={messages} height={chatHeight} /></Box>
-					<Box width={34}><StatusPanel config={config} busy={busy} health={health} usage={usage} responseTimeMs={responseTimeMs} height={statusHeight} /></Box>
+			<Header config={config} compact={compact} status={status} width={width} />
+			{height < 24 ? (
+				<Box width={width} height={bodyHeight} borderStyle="single" borderColor="yellow" justifyContent="center" alignItems="center">
+					<Text color="yellow">Terminal too small. Please resize.</Text>
+				</Box>
+			) : showSidebar ? (
+				<Box width={width} height={bodyHeight} flexDirection="row" overflow="hidden">
+					<ChatPanel messages={messages} width={chatWidth} height={bodyHeight} />
+					<Sidebar config={config} busy={busy} health={health} usage={usage} responseTimeMs={responseTimeMs} width={sidebarWidth} height={bodyHeight} />
 				</Box>
 			) : (
-				<Box height={contentHeight} flexDirection="column">
-					<MessageList messages={messages} height={chatHeight} />
-					<StatusPanel config={config} busy={busy} health={health} usage={usage} responseTimeMs={responseTimeMs} height={statusHeight} />
+				<Box width={width} height={bodyHeight} flexDirection="column" overflow="hidden">
+					<ChatPanel messages={messages} width={width} height={bodyHeight} />
 				</Box>
 			)}
-			{error ? <ErrorPanel message={error} /> : null}
-			<InputBox onSubmit={submit} disabled={showConfig} onNotice={setError} />
-			<CommandHelp compact={compact} />
+			{!showSidebar ? <StatusBar config={config} health={health} responseTimeMs={responseTimeMs} width={width} /> : null}
+			{error ? <ErrorPanel message={error} width={width} /> : null}
+			<CommandHelp compact={compact} width={width} />
+			<InputBox onSubmit={submit} disabled={showConfig || height < 12} onNotice={setError} width={width} height={inputHeight} />
 			{showConfig ? <SetupModal initialConfig={config} onComplete={handleConfigSave} onCancel={() => setShowConfig(false)} /> : null}
 		</Box>
 	);
