@@ -1,0 +1,148 @@
+import React, {useMemo, useState} from 'react';
+import {Box, Text, useApp, useInput, useStdout} from 'ink';
+import {providerLabels, type OpenSyntaxConfig} from '../config/schema.js';
+import {saveConfig} from '../config/config-store.js';
+import {createProvider} from '../providers/openai-compatible.js';
+import type {ChatMessage, ChatUsage} from '../providers/provider.js';
+import {InputBox} from './InputBox.js';
+import {MessageList} from './MessageList.js';
+import {SetupModal} from './SetupModal.js';
+import {StatusPanel} from './StatusPanel.js';
+
+type ChatScreenProps = {
+	config: OpenSyntaxConfig;
+	onConfigChange: (config: OpenSyntaxConfig) => void;
+};
+
+export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
+	const {exit} = useApp();
+	const {stdout} = useStdout();
+	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [usage, setUsage] = useState<ChatUsage | undefined>();
+	const [showConfig, setShowConfig] = useState(false);
+	const provider = useMemo(() => createProvider(config), [config]);
+	const width = stdout.columns || 100;
+	const height = Math.max(stdout.rows || 30, 20);
+	const headerHeight = 3;
+	const inputHeight = 4;
+	const contentHeight = height - headerHeight - inputHeight;
+	const statusHeight = width >= 100 ? contentHeight : 7;
+	const chatHeight = width >= 100 ? contentHeight : Math.max(6, contentHeight - statusHeight);
+
+	useInput((_, key) => {
+		if (key.ctrl && _.toLowerCase() === 'c') {
+			exit();
+		}
+	});
+
+	async function handleSubmit(value: string) {
+		if (busy) {
+			return;
+		}
+
+		if (value.startsWith('/')) {
+			await handleCommand(value);
+			return;
+		}
+
+		const nextMessages: ChatMessage[] = [...messages, {role: 'user', content: value}];
+		setMessages(nextMessages);
+		setBusy(true);
+		setError(null);
+
+		try {
+			const result = await provider.chat([
+				{role: 'system', content: 'You are OpenSyntax, a concise terminal AI assistant.'},
+				...nextMessages
+			]);
+			setMessages(current => [...current, {role: 'assistant', content: result.content}]);
+			setUsage(result.usage);
+		} catch (chatError) {
+			setError(chatError instanceof Error ? chatError.message : 'Chat request failed');
+			setMessages(current => [...current, {role: 'assistant', content: 'I could not complete that request. Check the status panel for details.'}]);
+		} finally {
+			setBusy(false);
+		}
+	}
+
+	async function handleCommand(command: string) {
+		const [name, ...rest] = command.split(' ');
+		const arg = rest.join(' ').trim();
+
+		if (name === '/exit') {
+			exit();
+			return;
+		}
+
+		if (name === '/clear') {
+			setMessages([]);
+			setError(null);
+			return;
+		}
+
+		if (name === '/config') {
+			setShowConfig(true);
+			return;
+		}
+
+		if (name === '/model') {
+			if (!arg) {
+				setMessages(current => [...current, {role: 'assistant', content: `Current model: ${config.model}`}]);
+				return;
+			}
+
+			const nextConfig = {...config, model: arg};
+			await saveConfig(nextConfig);
+			onConfigChange(nextConfig);
+			setMessages(current => [...current, {role: 'assistant', content: `Model changed to ${arg}`}]);
+			return;
+		}
+
+		if (name === '/help') {
+			setMessages(current => [
+				...current,
+				{role: 'assistant', content: '/exit closes OpenSyntax\n/clear clears messages\n/config opens provider setup\n/model shows or changes the model\n/help shows this help'}
+			]);
+			return;
+		}
+
+		setMessages(current => [...current, {role: 'assistant', content: `Unknown command: ${name}. Use /help.`}]);
+	}
+
+	async function handleConfigSave(nextConfig: OpenSyntaxConfig) {
+		await saveConfig(nextConfig);
+		onConfigChange(nextConfig);
+		setShowConfig(false);
+		setError(null);
+	}
+
+	return (
+		<Box width={width} height={height} flexDirection="column">
+			<Box height={headerHeight} borderStyle="single" borderColor="cyan" paddingX={1} alignItems="center">
+				<Text bold color="cyan">OpenSyntax</Text>
+				<Text color="gray"> | {providerLabels[config.provider]} | {config.model}</Text>
+			</Box>
+
+			{width >= 100 ? (
+				<Box height={contentHeight} flexDirection="row">
+					<Box width={Math.max(60, width - 32)}>
+						<MessageList messages={messages} height={chatHeight} />
+					</Box>
+					<Box width={32}>
+						<StatusPanel config={config} busy={busy} error={error} usage={usage} height={statusHeight} />
+					</Box>
+				</Box>
+			) : (
+				<Box height={contentHeight} flexDirection="column">
+					<MessageList messages={messages} height={chatHeight} />
+					<StatusPanel config={config} busy={busy} error={error} usage={usage} height={statusHeight} />
+				</Box>
+			)}
+
+			<InputBox onSubmit={handleSubmit} disabled={busy || showConfig} />
+			{showConfig ? <SetupModal initialConfig={config} onComplete={handleConfigSave} onCancel={() => setShowConfig(false)} /> : null}
+		</Box>
+	);
+}
