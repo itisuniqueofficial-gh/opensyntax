@@ -69,7 +69,26 @@ Inside the chat UI:
 - `/clear` clears messages
 - `/config` opens provider setup
 - `/model` shows or changes the model
+- `/copy last` copies the last assistant response
+- `/copy all` copies the current conversation
+- `/paste` sends clipboard text as a prompt
+- `/shortcuts` shows keyboard shortcuts
 - `/help` shows command help
+
+## Keyboard Shortcuts
+
+- `Ctrl+V` pastes clipboard text into the input box
+- `Left` and `Right` move the input cursor
+- `Backspace` and `Delete` edit text around the cursor
+- `Ctrl+A` moves to the start of input
+- `Ctrl+E` moves to the end of input
+- `Ctrl+U` clears text before the cursor
+- `Ctrl+K` clears text after the cursor
+- `Ctrl+W` deletes the previous word
+- `Ctrl+L` clears chat messages
+- `Ctrl+O` opens provider config
+- `Ctrl+R` copies the last assistant response
+- `Ctrl+C` exits OpenSyntax
 
 ## Release Automation
 

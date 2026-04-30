@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {Box, Text, useApp, useInput, useStdout} from 'ink';
+import clipboard from 'clipboardy';
 import {providerLabels, type OpenSyntaxConfig} from '../config/schema.js';
 import {saveConfig} from '../config/config-store.js';
 import {createProvider} from '../providers/openai-compatible.js';
@@ -26,14 +27,33 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 	const width = stdout.columns || 100;
 	const height = Math.max(stdout.rows || 30, 20);
 	const headerHeight = 3;
-	const inputHeight = 4;
+	const inputHeight = 5;
 	const contentHeight = height - headerHeight - inputHeight;
 	const statusHeight = width >= 100 ? contentHeight : 7;
 	const chatHeight = width >= 100 ? contentHeight : Math.max(6, contentHeight - statusHeight);
 
-	useInput((_, key) => {
-		if (key.ctrl && _.toLowerCase() === 'c') {
+	useInput((input, key) => {
+		const shortcut = input.toLowerCase();
+
+		if (key.ctrl && shortcut === 'c') {
 			exit();
+		}
+
+		if (showConfig || busy) {
+			return;
+		}
+
+		if (key.ctrl && shortcut === 'l') {
+			setMessages([]);
+			setError(null);
+		}
+
+		if (key.ctrl && shortcut === 'o') {
+			setShowConfig(true);
+		}
+
+		if (key.ctrl && shortcut === 'r') {
+			void copyLastAssistantMessage();
 		}
 	});
 
@@ -82,6 +102,16 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 			return;
 		}
 
+		if (name === '/copy') {
+			await copyMessages(arg || 'last');
+			return;
+		}
+
+		if (name === '/paste') {
+			await pasteClipboardAsPrompt();
+			return;
+		}
+
 		if (name === '/config') {
 			setShowConfig(true);
 			return;
@@ -103,12 +133,57 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 		if (name === '/help') {
 			setMessages(current => [
 				...current,
-				{role: 'assistant', content: '/exit closes OpenSyntax\n/clear clears messages\n/config opens provider setup\n/model shows or changes the model\n/help shows this help'}
+				{role: 'assistant', content: '/exit closes OpenSyntax\n/clear clears messages\n/config opens provider setup\n/model shows or changes the model\n/copy last copies the last assistant response\n/copy all copies the visible conversation\n/paste sends clipboard text as a prompt\n/shortcuts shows keyboard shortcuts\n/help shows this help'}
+			]);
+			return;
+		}
+
+		if (name === '/shortcuts') {
+			setMessages(current => [
+				...current,
+				{role: 'assistant', content: 'Input: Ctrl+V paste, Left/Right move cursor, Backspace/Delete edit, Ctrl+A start, Ctrl+E end, Ctrl+U clear before cursor, Ctrl+K clear after cursor, Ctrl+W delete previous word. Chat: Ctrl+L clear, Ctrl+O config, Ctrl+R copy last assistant response, Ctrl+C exit.'}
 			]);
 			return;
 		}
 
 		setMessages(current => [...current, {role: 'assistant', content: `Unknown command: ${name}. Use /help.`}]);
+	}
+
+	async function copyLastAssistantMessage() {
+		await copyMessages('last');
+	}
+
+	async function copyMessages(target: string) {
+		try {
+			const normalized = target.toLowerCase();
+			const content = normalized === 'all'
+				? messages.map(message => `${message.role}: ${message.content}`).join('\n\n')
+				: [...messages].reverse().find(message => message.role === 'assistant')?.content;
+
+			if (!content) {
+				setMessages(current => [...current, {role: 'assistant', content: 'Nothing to copy yet.'}]);
+				return;
+			}
+
+			await clipboard.write(content);
+			setMessages(current => [...current, {role: 'assistant', content: normalized === 'all' ? 'Copied conversation to clipboard.' : 'Copied last assistant response to clipboard.'}]);
+		} catch (copyError) {
+			setError(copyError instanceof Error ? copyError.message : 'Unable to write clipboard');
+		}
+	}
+
+	async function pasteClipboardAsPrompt() {
+		try {
+			const pasted = (await clipboard.read()).trim();
+			if (!pasted) {
+				setMessages(current => [...current, {role: 'assistant', content: 'Clipboard is empty.'}]);
+				return;
+			}
+
+			await handleSubmit(pasted);
+		} catch (pasteError) {
+			setError(pasteError instanceof Error ? pasteError.message : 'Unable to read clipboard');
+		}
 	}
 
 	async function handleConfigSave(nextConfig: OpenSyntaxConfig) {
@@ -141,7 +216,7 @@ export function ChatScreen({config, onConfigChange}: ChatScreenProps) {
 				</Box>
 			)}
 
-			<InputBox onSubmit={handleSubmit} disabled={busy || showConfig} />
+			<InputBox onSubmit={handleSubmit} disabled={busy || showConfig} onNotice={setError} />
 			{showConfig ? <SetupModal initialConfig={config} onComplete={handleConfigSave} onCancel={() => setShowConfig(false)} /> : null}
 		</Box>
 	);
