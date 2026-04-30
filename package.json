@@ -15,7 +15,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "opensyntax": "./dist/cli.js"
+    "opensyntax": "dist/cli.js"
   },
   "files": [
     "dist",
