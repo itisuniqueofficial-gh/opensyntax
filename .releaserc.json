@@ -1,5 +1,6 @@
 {
   "branches": ["main"],
+  "repositoryUrl": "https://github.com/itisuniqueofficial-gh/opensyntax.git",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",

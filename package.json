@@ -4,6 +4,14 @@
   "description": "OpenSyntax is a terminal-based AI chatbot CLI with provider setup inside the terminal UI.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/itisuniqueofficial-gh/opensyntax.git"
+  },
+  "bugs": {
+    "url": "https://github.com/itisuniqueofficial-gh/opensyntax/issues"
+  },
+  "homepage": "https://github.com/itisuniqueofficial-gh/opensyntax#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
