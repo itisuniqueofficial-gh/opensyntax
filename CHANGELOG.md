@@ -1,3 +1,32 @@
+## [0.12.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.11.1...v0.12.0) (2026-05-07)
+
+### Features
+
+* add provider auth capabilities ([0647996](https://github.com/itisuniqueofficial-gh/opensyntax/commit/06479969e100f48def3bf35587420c3fb6f802e7))
+
+
+# OpenSyntax v0.12.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add provider auth capabilities
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.11.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.11.0...v0.11.1) (2026-05-07)
 
 ### Bug Fixes
