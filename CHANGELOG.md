@@ -1,3 +1,33 @@
+## [0.9.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.9.0...v0.9.1) (2026-05-07)
+
+### Maintenance
+
+* **deps:** bump diff from 7.0.0 to 8.0.3 ([87ed193](https://github.com/itisuniqueofficial-gh/opensyntax/commit/87ed193d54ae8097bbc802aee7e246c6aa54f5e2))
+
+
+# OpenSyntax v0.9.1
+
+## Summary
+This release includes 2 validated changes for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- Merge pull request #1 from itisuniqueofficial-gh/dependabot/npm_and_yarn/diff-8.0.3
+- chore(deps): bump diff from 7.0.0 to 8.0.3
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.9.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.2...v0.9.0) (2026-05-07)
 
 ### Features
