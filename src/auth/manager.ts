@@ -3,6 +3,7 @@ import {getProvider, providerRegistry, requireProvider} from '../providers/regis
 import {decryptSecret, loadProviders, removeProvider, upsertProvider, type ProviderCredential} from './storage.js';
 import {createApiKeyCredential} from './api-key.js';
 import {discoverModels, validateProviderConnection} from './validators.js';
+import {modelsForProvider as staticModels} from '../model/registry.js';
 
 export async function hasConfiguredProvider(): Promise<boolean> {
   const file = await loadProviders();
@@ -35,8 +36,23 @@ export async function disconnectProvider(providerId: string): Promise<void> {
 export async function setDefaultProvider(providerId: string): Promise<void> {
   const file = await loadProviders();
   if (!file.providers[providerId]) throw new Error(`Provider is not connected: ${providerId}`);
+  file.providers[providerId] = normalizeCredentialModel(file.providers[providerId]);
   file.defaultProvider = providerId;
   await upsertProvider(providerId, file.providers[providerId], true);
+}
+
+export async function setProviderModel(providerId: string, model: string): Promise<ProviderCredential> {
+  const file = await loadProviders();
+  const credential = file.providers[providerId];
+  if (!credential) throw new Error(`Provider is not connected: ${providerId}`);
+  const next = {...credential, model};
+  await upsertProvider(providerId, next, file.defaultProvider === providerId);
+  return next;
+}
+
+export async function connectedProvider(providerId: string): Promise<ProviderCredential | undefined> {
+  const file = await loadProviders();
+  return file.providers[providerId];
 }
 
 export async function resolveModelConfig(base: AppConfig, requestedProviderId?: string): Promise<AppConfig> {
@@ -48,7 +64,9 @@ export async function resolveModelConfig(base: AppConfig, requestedProviderId?: 
     return {...base, provider: provider.id, providerName: provider.name, model: base.model || provider.defaultModel, apiKey: base.apiKey ?? envKey(provider), baseUrl: base.baseUrl ?? provider.baseUrl};
   }
   const provider = requireProvider(selected.providerId);
-  return {...base, provider: selected.providerId, providerName: provider.name, model: selected.model, apiKey: selected.encryptedSecret ? decryptSecret(selected.encryptedSecret) : envKey(provider), baseUrl: selected.baseUrl ?? provider.baseUrl, permission: base.permission};
+  const normalized = normalizeCredentialModel(selected);
+  if (normalized.model !== selected.model) await upsertProvider(selected.providerId, normalized, file.defaultProvider === selected.providerId);
+  return {...base, provider: selected.providerId, providerName: provider.name, model: normalized.model, apiKey: selected.encryptedSecret ? decryptSecret(selected.encryptedSecret) : envKey(provider), baseUrl: selected.baseUrl ?? provider.baseUrl, permission: base.permission};
 }
 
 export async function activeProviderId(requestedProviderId?: string): Promise<string | undefined> {
@@ -83,5 +101,12 @@ export function providerChoices() {
 
 export function envKey(provider: {apiKeyEnv?: readonly string[]}): string | undefined {
   return provider.apiKeyEnv?.map((name) => process.env[name]).find(Boolean);
+}
+
+function normalizeCredentialModel(credential: ProviderCredential): ProviderCredential {
+  const provider = requireProvider(credential.providerId);
+  const known = new Set([...(credential.models ?? []), ...staticModels(provider.id).map((model) => model.id), provider.defaultModel]);
+  if (!credential.model || credential.model === 'all' || (known.size > 1 && !known.has(credential.model))) return {...credential, model: provider.defaultModel};
+  return credential;
 }
 

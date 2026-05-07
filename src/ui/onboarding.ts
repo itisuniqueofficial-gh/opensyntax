@@ -308,7 +308,7 @@ export async function runSettings(): Promise<void> {
 }
 
 export async function switchProviderPrompt(): Promise<string | undefined> {
-  const {listConnectedProviders, setDefaultProvider} = await import('../auth/manager.js');
+  const {listConnectedProviders, setDefaultProvider, connectedProvider} = await import('../auth/manager.js');
   const providers = await listConnectedProviders();
   if (!providers.length) { panel('Providers', 'No connected providers. Run: opensyntax auth'); return undefined; }
   const providerId = (await prompts({
@@ -324,7 +324,9 @@ export async function switchProviderPrompt(): Promise<string | undefined> {
   if (!providerId) return undefined;
   await setDefaultProvider(providerId);
   await refreshProviderModels(providerId).catch(() => undefined);
-  panel('Provider Updated', `Active provider: ${chalk.cyan(getProvider(providerId)?.name ?? providerId)}`);
+  const provider = getProvider(providerId);
+  const credential = await connectedProvider(providerId);
+  panel('Provider Updated', [`Active provider: ${chalk.cyan(provider?.name ?? providerId)}`, `Model: ${chalk.cyan(credential?.model ?? provider?.defaultModel ?? '')}`, '', 'Use /model to pick another model for this provider.'].join('\n'));
   return providerId;
 }
 

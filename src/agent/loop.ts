@@ -19,23 +19,28 @@ import {printToolStart, printToolEnd, printToolError, printSessionStatusBar} fro
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
 import {modelUnavailableMessage, fallbackModel} from '../model/capabilities.js';
 import {modelsForProvider} from '../model/registry.js';
+import {allModelsForProvider} from '../model/registry.js';
 import {getStreamingRenderer, resetStreamingRenderer} from '../ui/renderers/streaming-markdown.js';
+import {getProviderModels} from '../model/runtime.js';
+import {setProviderModel} from '../auth/manager.js';
 
 export class AgentLoop {
   private config: AppConfig;
   private readonly workspace: string;
   private readonly registry: ToolRegistry;
   private rules: RuleContext;
+  private readonly persistPreferences: boolean;
   private autoMode = false;
   session: Session;
 
-  constructor(options: {workspace: string; config: AppConfig; session: Session | SessionRecord; registry?: ToolRegistry; rules?: RuleContext}) {
+  constructor(options: {workspace: string; config: AppConfig; session: Session | SessionRecord; registry?: ToolRegistry; rules?: RuleContext; persistPreferences?: boolean}) {
     this.workspace = options.workspace;
     this.config = options.config;
     // Upgrade legacy SessionRecord to Session if needed
     this.session = upgradeSession(options.session, options.config.provider, options.config.model);
     this.registry = options.registry ?? defaultRegistry;
     this.rules = options.rules ?? emptyRuleContext;
+    this.persistPreferences = options.persistPreferences ?? true;
   }
 
   get providerId() { return this.config.provider; }
@@ -46,7 +51,16 @@ export class AgentLoop {
   baseUrl() { return this.config.baseUrl; }
   toolNames() { return this.registry.names(); }
   toolSpecs() { return this.registry.specs(); }
-  async setModel(model: string) { this.config = {...this.config, model}; return `Model set to ${model}`; }
+  async setModel(model: string) {
+    const available = await availableModelIds(this.config.provider);
+    if (model === 'all' || (available.length && !available.includes(model))) {
+      return [`Model ${model} is not available for ${this.providerName()}.`, '', `Active provider: ${this.config.provider}`, `Use /provider openai before selecting OpenAI models.`, available.length ? `Available examples: ${available.slice(0, 8).join(', ')}` : 'Run /models refresh to update available models.'].join('\n');
+    }
+    if (this.persistPreferences) await setProviderModel(this.config.provider, model).catch(() => undefined);
+    this.config = {...this.config, model};
+    return `Model set to ${this.config.provider}/${model}`;
+  }
+  async setProviderConfig(config: AppConfig) { this.config = config; return `Provider set to ${this.providerName()} (${this.config.provider}/${this.config.model})`; }
   updateConfig(config: AppConfig) { this.config = config; }
   updateRules(rules: RuleContext) { this.rules = rules; }
   rulesContext() { return this.rules; }
@@ -216,6 +230,12 @@ export class AgentLoop {
   private markPlanComplete(): void {
     this.session.plan = this.session.plan.map((item) => item.state === 'pending' || item.state === 'in_progress' ? {...item, state: 'completed'} : item);
   }
+}
+
+async function availableModelIds(providerId: string): Promise<string[]> {
+  const dynamic = await getProviderModels(providerId).catch(() => [] as string[]);
+  const staticIds = allModelsForProvider(providerId).filter((model) => !model.speculative).map((model) => model.id);
+  return [...new Set([...dynamic, ...staticIds])];
 }
 
 // ---------------------------------------------------------------------------

@@ -408,6 +408,7 @@ Inside the interactive terminal session, use slash commands for fast control:
 | `/help` | Show available interactive commands. |
 | `/clear` | Clear the terminal screen. |
 | `/provider` | Switch the default provider. |
+| `/provider <id>` | Switch directly to a connected provider, for example `/provider openai`. |
 | `/providers` | Show provider connection state. |
 | `/model` | Show the active provider and model. |
 | `/model <name>` | Switch the active model for the current session. |
