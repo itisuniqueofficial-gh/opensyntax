@@ -8,6 +8,7 @@
   let activeLink = null;
 
   ensureSponsorNavigation();
+  ensureResponsiveTables();
 
   document.querySelectorAll('.sidebar a').forEach((link) => {
     const href = link.getAttribute('href');
@@ -115,6 +116,16 @@
     addLink(document.querySelector('[data-topnav]'), 'Sponsors', 'sponsors.html', 'GitHub');
     addLink(document.querySelector('[data-sidebar]'), 'Sponsors', 'sponsors.html');
     document.querySelectorAll('.footer-links').forEach((footer) => addLink(footer, 'Sponsors', 'sponsors.html'));
+  }
+
+  function ensureResponsiveTables() {
+    document.querySelectorAll('table').forEach((table) => {
+      if (table.parentElement?.classList.contains('table')) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table';
+      table.parentNode?.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
   }
 
   function addLink(container, label, href, beforeLabel) {

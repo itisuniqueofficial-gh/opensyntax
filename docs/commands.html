@@ -25,7 +25,7 @@
   <p class="lead">OpenSyntax supports regular CLI commands and interactive slash commands inside the chat session.</p>
 
   <h2>CLI Commands</h2>
-  <table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody>
+  <div class="table"><table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody>
     <tr><td><code>opensyntax</code></td><td>Start an interactive coding-agent session.</td></tr>
     <tr><td><code>opensyntax "fix tests"</code></td><td>Run a one-shot request.</td></tr>
     <tr><td><code>opensyntax auth</code></td><td>Connect or update an AI provider.</td></tr>
@@ -33,10 +33,10 @@
     <tr><td><code>opensyntax models [provider]</code></td><td>List model defaults and examples.</td></tr>
     <tr><td><code>opensyntax doctor</code></td><td>Check provider, config, git, and workspace health.</td></tr>
     <tr><td><code>opensyntax rules init</code></td><td>Create a starter <code>OPENSYNTAX.md</code>.</td></tr>
-  </tbody></table>
+  </tbody></table></div>
 
   <h2>Interactive Slash Commands</h2>
-  <table><thead><tr><th>Command</th><th>Purpose</th><th>Expected output</th></tr></thead><tbody>
+  <div class="table"><table><thead><tr><th>Command</th><th>Purpose</th><th>Expected output</th></tr></thead><tbody>
     <tr><td><code>/help</code></td><td>Show available commands.</td><td>Command list.</td></tr>
     <tr><td><code>/clear</code></td><td>Clear terminal screen.</td><td>Blank screen with prompt.</td></tr>
     <tr><td><code>/providers</code></td><td>List providers and connection state.</td><td>Provider table.</td></tr>
@@ -69,7 +69,7 @@
     <tr><td><code>/rules open</code></td><td>Open the nearest instruction file, creating one if needed.</td><td>Editor/open message.</td></tr>
     <tr><td><code>/rules init</code></td><td>Create a starter <code>OPENSYNTAX.md</code>.</td><td>Created file path.</td></tr>
     <tr><td><code>/exit</code></td><td>Quit OpenSyntax.</td><td>Returns to shell.</td></tr>
-  </tbody></table>
+  </tbody></table></div>
 
   <h2>Workspace Instructions</h2>
   <p>OpenSyntax loads <code>OPENSYNTAX.md</code>, <code>AGENTS.md</code>, <code>.opensyntax/OPENSYNTAX.md</code>, and <code>.opensyntax/AGENTS.md</code> from parent folders to the current workspace. Broader files load first and nearer files override broader guidance.</p>
