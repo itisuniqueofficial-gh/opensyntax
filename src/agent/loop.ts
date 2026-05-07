@@ -11,9 +11,12 @@ import type {RuleContext} from '../rules/types.js';
 import {emptyRuleContext} from '../rules/types.js';
 import {errorMessage} from '../utils/errors.js';
 import {askPermission} from './permissions.js';
-import {initialPlan} from './planner.js';
+import {autonomousPlan, completePlan, failPlan, startPlan} from './planner.js';
 import {createModelProvider} from './orchestrator.js';
 import {systemPrompt} from './prompts.js';
+import {buildWorkspaceContext, verificationCommandsForWorkspace} from './context.js';
+import {syncTodosFromPlan, updateTodoState} from './tasks.js';
+import {createVerificationPlan} from './verification.js';
 import {assistantChunk, panel, status} from '../ui/renderer.js';
 import {printToolStart, printToolEnd, printToolError, printSessionStatusBar} from '../ui/layout.js';
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
@@ -68,7 +71,21 @@ export class AgentLoop {
   setAutoMode(enabled: boolean) { this.autoMode = enabled; return enabled ? 'Autonomous mode enabled. I will continue tool-assisted workflows until completion while still asking approval for risky actions.' : 'Autonomous mode disabled.'; }
 
   async run(request: string): Promise<void> {
-    if (this.session.plan.length === 0) this.session.plan = initialPlan(request);
+    const workflow = autonomousPlan(request);
+    this.session.plan = workflow.plan;
+    this.session.plan = startPlan(this.session.plan, this.session.plan[0]?.id ?? 'inspect');
+    syncTodosFromPlan(this.session);
+
+    try {
+      const workspaceContext = await buildWorkspaceContext(this.workspace, request);
+      const verificationCommands = verificationCommandsForWorkspace(workflow.verificationCommands, workspaceContext);
+      const verificationPlan = createVerificationPlan(request, workspaceContext, verificationCommands);
+      this.session.contextSummary = verificationCommands.length
+        ? `${workspaceContext.summary}\n- Suggested verification: ${verificationPlan.commands.join(', ')}\n- Verification reason: ${verificationPlan.reason}`
+        : workspaceContext.summary;
+    } catch {
+      this.session.contextSummary = undefined;
+    }
 
     // Auto-title the session from the first user message
     maybeSetTitle(this.session, request);
@@ -107,7 +124,7 @@ export class AgentLoop {
         for await (const event of provider.stream({
           messages: chatMessages,
           tools: shouldEnableTools(request) ? this.registry.specs() : [],
-          systemPrompt: systemPrompt(this.workspace, this.session.plan, this.rules, this.autoMode),
+          systemPrompt: systemPrompt(this.workspace, this.session.plan, this.rules, this.autoMode, this.session.contextSummary),
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens
         })) {
@@ -159,10 +176,18 @@ export class AgentLoop {
       }
 
       showThinkingStep('selecting-tools');
+      this.session.plan = completePlan(this.session.plan, 'inspect');
+      this.session.plan = startPlan(this.session.plan, 'execute');
+      updateTodoState(this.session, 'inspect', 'completed');
+      updateTodoState(this.session, 'execute', 'in_progress');
+      let toolsOk = true;
       for (const call of toolCalls) {
         showToolDecision(call.name);
-        await this.executeTool(call);
+        const ok = await this.executeTool(call);
+        toolsOk = toolsOk && ok;
       }
+      this.session.plan = toolsOk ? completePlan(this.session.plan, 'execute') : failPlan(this.session.plan, 'execute');
+      updateTodoState(this.session, 'execute', toolsOk ? 'completed' : 'failed');
       showThinkingStep('verifying');
       await saveSession(this.session);
     }
@@ -174,7 +199,7 @@ export class AgentLoop {
     printSessionStatusBar(this.session, this.modelName(), this.config.permission);
   }
 
-  private async executeTool(call: ToolCall): Promise<void> {
+  private async executeTool(call: ToolCall): Promise<boolean> {
     const startMs = Date.now();
     printToolStart(call.name, call.arguments);
     const context: ToolContext = {
@@ -214,6 +239,7 @@ export class AgentLoop {
     printToolEnd(call.name, result.ok, durationMs);
     if (!result.ok) printToolError(call.name, result.output);
     if (result.ok && this.config.showToolSummary) panel('Tool', `${call.name}: ${result.output.slice(0, 500)}`);
+    return result.ok;
   }
 
   private showEmptyResponseHelp(): void {
@@ -229,6 +255,7 @@ export class AgentLoop {
 
   private markPlanComplete(): void {
     this.session.plan = this.session.plan.map((item) => item.state === 'pending' || item.state === 'in_progress' ? {...item, state: 'completed'} : item);
+    syncTodosFromPlan(this.session);
   }
 }
 

@@ -4,6 +4,7 @@ import {tool, type Tool} from './types.js';
 
 const emptySchema = z.object({});
 const diffSchema = z.object({staged: z.boolean().default(false), path: z.string().optional()});
+const logSchema = z.object({limit: z.number().int().positive().max(100).default(10), path: z.string().optional()});
 
 export const gitStatusTool = tool({
   name: 'git_status',
@@ -32,7 +33,20 @@ export const gitDiffTool = tool({
   }
 });
 
-export const gitTools: Tool[] = [gitStatusTool, gitDiffTool];
+export const gitLogTool = tool({
+  name: 'git_log',
+  description: 'Show recent git commits, optionally limited to one path.',
+  schema: logSchema,
+  async execute(input, context) {
+    const inside = await git(context.workspace, ['rev-parse', '--is-inside-work-tree']);
+    if (!inside.ok) return {ok: true, output: 'No Git repository detected in current workspace.'};
+    const args = ['log', '--oneline', `-${input.limit}`, ...(input.path ? ['--', input.path] : [])];
+    const result = await git(context.workspace, args);
+    return {ok: result.ok, output: result.output || 'No commits found'};
+  }
+});
+
+export const gitTools: Tool[] = [gitStatusTool, gitDiffTool, gitLogTool];
 
 async function git(cwd: string, args: string[]): Promise<{ok: boolean; output: string}> {
   const result = await execa('git', args, {cwd, reject: false});

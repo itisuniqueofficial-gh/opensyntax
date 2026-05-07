@@ -6,6 +6,7 @@ import {searchTools} from './search.js';
 import {executeCommandTool} from './shell.js';
 import {gitTools} from './git.js';
 import {diffPreviewTool, generateDiffTool} from './diff.js';
+import {verifyWorkspaceTool} from './verification.js';
 import {tool, type Tool, type ToolContext, type ToolResult} from './types.js';
 
 export class ToolRegistry {
@@ -38,5 +39,5 @@ export const askPermissionTool = tool({
   }
 });
 
-export const defaultRegistry = new ToolRegistry([...filesystemTools, ...folderTools, ...searchTools, executeCommandTool, ...gitTools, diffPreviewTool, generateDiffTool, askPermissionTool]);
+export const defaultRegistry = new ToolRegistry([...filesystemTools, ...folderTools, ...searchTools, executeCommandTool, verifyWorkspaceTool, ...gitTools, diffPreviewTool, generateDiffTool, askPermissionTool]);
 export {writeFileTool};

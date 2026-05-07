@@ -47,7 +47,9 @@ Use OpenSyntax when you want to:
 - **Interactive terminal chat** with streaming assistant output.
 - **One-shot CLI prompts** for quick tasks from scripts or shell history.
 - **Autonomous agent loop** that plans, acts, observes, and continues until complete.
+- **Objective-aware workflow planning** for debugging, verification, git, research, and code-change requests.
 - **Task planning** with `/plan` visibility inside interactive mode.
+- **Workspace context hints** that surface package scripts, package manager, and likely relevant files before tool use.
 - **Session persistence** under `~/.opensyntax/sessions`.
 
 ### Coding Workflow
@@ -57,6 +59,8 @@ Use OpenSyntax when you want to:
 - **Safe file editing** through exact patch replacement and diff previews.
 - **Git awareness** with branch, dirty worktree, recent commits, and diff inspection.
 - **Validation command support** for tests, builds, typechecks, and custom shell tasks.
+- **Self-verification pipeline** through the typed `verify_workspace` tool, with failure summaries and retry advice.
+- **Framework detection** for React, Next.js, Vue, Vite, Express, NestJS, Python, Docker, Turborepo, and pnpm workspaces.
 
 ### Safety And Control
 
@@ -252,7 +256,17 @@ OpenSyntax includes read-only repository intelligence commands that help the age
 /plugins           Show built-in tools and workspace plugin manifests
 ```
 
-Autonomous mode does not bypass safety. Risky shell commands, destructive git operations, external path access, and secret exposure protections still require approval or remain blocked.
+Autonomous mode does not bypass safety. Risky shell commands, destructive git operations, external path access, and secret exposure protections still require approval or remain blocked. For requests like `fix all TypeScript errors`, OpenSyntax now plans the workflow, injects workspace context, suggests the correct validation command for the detected package manager, updates task state, and reflects failed tool calls back into the session plan.
+
+The autonomous architecture follows this loop:
+
+```txt
+Observe -> Understand -> Plan -> Select Tools -> Execute -> Verify -> Reflect -> Continue -> Complete
+```
+
+The runtime builds a compact context summary before model inference. It detects package manager, scripts, project type, framework, build system, test system, TypeScript, Docker, monorepo signals, git state, and likely relevant files. The model receives that summary instead of a full repository dump.
+
+For verification, the typed `verify_workspace` tool chooses safe commands from the objective and package scripts. Examples: `fix build errors` selects `build`; `fix TypeScript errors` selects `typecheck`; failing tests select `test`. Failed commands return structured summaries and retry advice so the agent can patch minimally and rerun the same verification.
 
 ### Config Command
 
