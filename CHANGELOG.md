@@ -1,3 +1,33 @@
+## [0.7.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.7.0...v0.7.1) (2026-05-07)
+
+### Documentation
+
+* add sponsors page and funding metadata ([efd6265](https://github.com/itisuniqueofficial-gh/opensyntax/commit/efd6265ef978415f1e2e576638f8b7bb5f2def3b))
+
+
+# OpenSyntax v0.7.1
+
+## Summary
+This release includes 2 validated changes for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- docs: add sponsors page and funding metadata
+- Update Buy Me a Coffee username in FUNDING.yml
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.7.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.6.0...v0.7.0) (2026-05-07)
 
 ### Features
