@@ -1,5 +1,6 @@
-export {App} from './ui/App.js';
-export {loadConfig, saveConfig, configPath} from './config/config-store.js';
-export {configSchema, providerDefaults, providerLabels} from './config/schema.js';
-export {createProvider, OpenAICompatibleProvider} from './providers/openai-compatible.js';
-export {providerRegistry, providerIds} from './providers/registry.js';
+export {AgentLoop} from './agent/loop.js';
+export {createModelProvider} from './agent/orchestrator.js';
+export {loadConfig, saveConfig} from './config/config.js';
+export {defaultRegistry, ToolRegistry} from './tools/registry.js';
+export type {Tool, ToolContext, ToolResult, PermissionLevel} from './tools/types.js';
+export type {ChatMessage, ToolCall, ModelConfig} from './model/types.js';

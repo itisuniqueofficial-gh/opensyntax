@@ -1,0 +1,40 @@
+import {execa} from 'execa';
+import {z} from 'zod';
+import {tool, type Tool} from './types.js';
+
+const emptySchema = z.object({});
+const diffSchema = z.object({staged: z.boolean().default(false), path: z.string().optional()});
+
+export const gitStatusTool = tool({
+  name: 'git_status',
+  description: 'Inspect current git branch, dirty files, and recent commits.',
+  schema: emptySchema,
+  async execute(_, context) {
+    const [inside, branch, status, log] = await Promise.all([
+      git(context.workspace, ['rev-parse', '--is-inside-work-tree']),
+      git(context.workspace, ['branch', '--show-current']),
+      git(context.workspace, ['status', '--short', '--branch']),
+      git(context.workspace, ['log', '--oneline', '-5'])
+    ]);
+    if (!inside.ok) return {ok: false, output: 'Not a git repository'};
+    return {ok: true, output: [`Branch: ${branch.output || 'detached'}`, status.output, 'Recent commits:', log.output].join('\n'), data: {branch: branch.output, status: status.output}};
+  }
+});
+
+export const gitDiffTool = tool({
+  name: 'git_diff',
+  description: 'Show staged or unstaged git diff, optionally for one path.',
+  schema: diffSchema,
+  async execute(input, context) {
+    const args = ['diff', ...(input.staged ? ['--staged'] : []), ...(input.path ? ['--', input.path] : [])];
+    const result = await git(context.workspace, args);
+    return {ok: result.ok, output: result.output || 'No diff'};
+  }
+});
+
+export const gitTools: Tool[] = [gitStatusTool, gitDiffTool];
+
+async function git(cwd: string, args: string[]): Promise<{ok: boolean; output: string}> {
+  const result = await execa('git', args, {cwd, reject: false});
+  return {ok: result.exitCode === 0, output: (result.stdout || result.stderr).trim()};
+}

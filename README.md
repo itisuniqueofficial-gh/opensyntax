@@ -1,181 +1,188 @@
 # OpenSyntax
 
-OpenSyntax is a professional fullscreen terminal AI chatbot CLI with provider setup inside the terminal UI.
+OpenSyntax is a terminal-based AI coding agent for real engineering workflows. It can chat, inspect a workspace, call typed tools, edit files safely, run shell commands with permissions, understand git state, persist sessions, and stream model responses.
+
+## File Tree
+
+```txt
+terminal-agent/
+├── package.json
+├── tsconfig.json
+├── README.md
+├── .env.example
+├── .gitignore
+├── src/
+│   ├── index.ts
+│   ├── cli.ts
+│   ├── agent/
+│   │   ├── loop.ts
+│   │   ├── planner.ts
+│   │   ├── orchestrator.ts
+│   │   ├── permissions.ts
+│   │   └── prompts.ts
+│   ├── tools/
+│   │   ├── filesystem.ts
+│   │   ├── search.ts
+│   │   ├── shell.ts
+│   │   ├── git.ts
+│   │   ├── diff.ts
+│   │   ├── registry.ts
+│   │   └── types.ts
+│   ├── model/
+│   │   ├── provider.ts
+│   │   ├── openai.ts
+│   │   ├── anthropic.ts
+│   │   ├── gemini.ts
+│   │   └── types.ts
+│   ├── ui/
+│   │   ├── chat.ts
+│   │   ├── renderer.ts
+│   │   ├── prompts.ts
+│   │   └── markdown.ts
+│   ├── session/
+│   │   ├── store.ts
+│   │   └── history.ts
+│   ├── config/
+│   │   ├── config.ts
+│   │   └── defaults.ts
+│   ├── utils/
+│   │   ├── logger.ts
+│   │   ├── paths.ts
+│   │   ├── errors.ts
+│   │   ├── schema.ts
+│   │   └── streams.ts
+│   └── tests/
+│       ├── tools.test.ts
+│       └── agent.test.ts
+```
 
 ## Install
 
 ```bash
-npm install -g opensyntax
+npm install
+npm run build
+npm link
 ```
 
-## First Run
+## Configuration
 
-Run OpenSyntax and complete the provider setup modal inside the same terminal window:
+Create a config file:
 
 ```bash
+opensyntax config --provider openai --model gpt-4o-mini --api-key "$OPENAI_API_KEY"
+```
+
+Or use environment variables:
+
+```bash
+cp .env.example .env
+export OPENSYNTAX_PROVIDER=openai
+export OPENSYNTAX_MODEL=gpt-4o-mini
+export OPENSYNTAX_API_KEY=sk-...
+```
+
+Supported providers:
+
+- `openai`
+- `openrouter`
+- `anthropic`
+- `gemini`
+
+OpenAI-compatible providers support streamed text and tool calls. Anthropic and Gemini adapters provide streamed terminal output from their response text and can be extended with native tool mapping.
+
+## Usage
+
+```bash
+agent "fix TypeScript errors"
+agent "refactor auth module"
+agent "add dark mode"
+agent "explain this repository"
+agent "find performance bottlenecks"
 opensyntax
 ```
 
-Config is saved to `~/.opensyntax/config.json`. No `.env` file is required.
-
-## Providers
-
-OpenSyntax uses an OpenAI-compatible provider adapter system.
-
-- NVIDIA: `https://integrate.api.nvidia.com/v1`
-- OpenAI: `https://api.openai.com/v1`
-- OpenRouter: `https://openrouter.ai/api/v1`
-- Groq: `https://api.groq.com/openai/v1`
-- Together AI: `https://api.together.xyz/v1`
-- Mistral: `https://api.mistral.ai/v1`
-- DeepSeek: `https://api.deepseek.com/v1`
-- Cerebras: `https://api.cerebras.ai/v1`
-- Ollama local: `http://localhost:11434/v1`
-- Custom OpenAI-compatible endpoint
-
-Ollama does not require an API key. All other built-in hosted providers require one.
-
-## Fullscreen Chat UI
-
-The default `opensyntax` command opens a same-window fullscreen UI with:
-
-- Fixed header: `OpenSyntax | Provider | Model | Mode: Chat`
-- Internally rendered chat panel
-- Responsive side or bottom status panel
-- Fixed multiline input at the bottom
-- Provider setup modal
-- Loading and streaming response state
-- Markdown and fenced-code rendering
-- API health, token placeholder, and response time status
-
-## Markdown And Syntax Highlighting
-
-Assistant responses support terminal-safe Markdown rendering:
-
-- headings
-- bold and italic text
-- inline code
-- fenced code blocks
-- links
-- ordered and unordered lists
-- blockquotes
-
-Code blocks are rendered in bordered panels and highlighted with `cli-highlight` for common languages including JavaScript, TypeScript, JSX, TSX, HTML, CSS, JSON, Markdown, Bash, Python, Java, C, C++, SQL, and YAML.
-
-## Chat Commands
-
-Inside the fullscreen UI:
+Interactive commands:
 
 - `/help` shows commands
-- `/clear` clears messages
-- `/exit` closes OpenSyntax
-- `/config` opens provider setup
-- `/provider` shows provider details
-- `/model` shows the current model
-- `/model <name>` changes the model
-- `/stream on` enables streaming
-- `/stream off` disables streaming
-- `/reset` resets the chat session
-- `/about` shows version info
-- `/doctor` runs diagnostics in the UI
-- `/copy last` copies the last assistant response
-- `/copy all` copies the current conversation
-- `/paste` sends clipboard text as a prompt
+- `/clear` clears the terminal
+- `/model` shows or changes the active model
+- `/tools` lists registered tools
+- `/plan` shows task progress
+- `/session` lists saved sessions
+- `/diff` asks the agent to inspect git diff
+- `/undo` explains safe reversal workflow
+- `/exit` quits
 
-## Keyboard Shortcuts
+## Permissions
 
-- `Enter` sends the message
-- `Shift+Enter` or `Alt+Enter` inserts a newline when supported by the terminal
-- `Ctrl+V` pastes clipboard text
-- `Ctrl+A` moves to the start of input
-- `Ctrl+E` moves to the end of input
-- `Ctrl+U` clears text before the cursor
-- `Ctrl+K` clears text after the cursor
-- `Ctrl+W` deletes the previous word
-- `Up` and `Down` navigate input history
-- `Ctrl+L` clears chat
-- `Ctrl+O` opens config
-- `Ctrl+R` copies the last assistant response
-- `Ctrl+C` cancels the current request
-- Press `Ctrl+C` again to exit
-- `Esc` closes modal panels
+Permission levels:
 
-## Direct Ask Mode
+- `read-only`: read/search/git inspection only
+- `workspace-write`: permits workspace writes, no shell execution
+- `shell-safe`: permits shell execution but asks before risky commands
+- `full-access`: permits shell execution after explicit risky-action prompts from tools
 
-```bash
-opensyntax ask "Explain closures in JavaScript"
-opensyntax ask "Write a React button" --provider nvidia --model meta/llama-3.1-70b-instruct
-opensyntax ask "Return JSON only" --json
-```
+Risky command patterns include `rm`, `sudo`, `git reset`, `git clean`, force push, `chmod`, `chown`, `docker prune`, recursive deletes, and system package installs.
 
-Options:
+## Architecture
 
-- `--provider <provider>` overrides the saved provider
-- `--model <model>` overrides the saved model
-- `--base-url <url>` overrides the saved base URL
-- `--no-stream` disables streaming for the request
-- `--json` asks for JSON-only output
-- `--markdown` asks for Markdown output
+The system is organized around a small autonomous loop and a typed tool registry.
 
-## Config Command
+- `src/agent/loop.ts` owns conversation state, plan state, model streaming, tool execution, and session persistence.
+- `src/model/*` implements provider adapters with streaming support and shared request types.
+- `src/tools/*` exposes validated Zod schemas for filesystem, search, shell, git, diff, and permission tools.
+- `src/session/*` persists conversations, plans, and tool logs under `~/.opensyntax/sessions`.
+- `src/ui/*` provides a compact terminal UX with colored panels, markdown rendering, and command prompts.
 
-```bash
-opensyntax config
-opensyntax config --view
-opensyntax config --test
-opensyntax config --reset
-```
+## Tool System
 
-The config command never prints full API keys. Secrets are masked like `sk-****abcd`.
+The model never directly manipulates files or shells. It emits structured tool calls. The orchestrator validates each call with Zod, applies permission checks, executes the tool, records the result, and feeds the observation back into the conversation.
 
-## Doctor Command
+Required tools implemented:
 
-```bash
-opensyntax doctor
-```
+- `read_file`
+- `write_file`
+- `patch_file`
+- `search_files`
+- `list_files`
+- `execute_command`
+- `git_status`
+- `git_diff`
+- `ask_permission`
+- `diff_preview`
 
-Doctor checks:
+## Agent Loop
 
-- Node.js version
-- OpenSyntax package version
-- config file path and parse status
-- provider support
-- API key presence where required
-- base URL validity
-- model setting
-- provider network/API health
-- write permission for `~/.opensyntax`
-- warning if config would be inside the project folder
+For each request, OpenSyntax:
 
-## Troubleshooting
-
-- Invalid API key: run `opensyntax config` and update the key.
-- Model not found: use `/model <name>` or `opensyntax config`.
-- Rate limit: wait and retry, or use another provider.
-- Network failure: check base URL and provider status.
-- Ollama failure: ensure `ollama serve` is running and the model is pulled.
-
-## Security
-
-- Never commit API keys or npm tokens.
-- OpenSyntax never prints full secrets.
-- Config files are written with private permissions where supported.
-- NPM publishing uses the GitHub repository secret `NPM_TOKEN`.
+1. Records the user message.
+2. Creates or updates a plan.
+3. Inspects git state once per session.
+4. Streams model output.
+5. Executes validated tool calls.
+6. Returns tool observations to the model.
+7. Continues until no more tool calls are requested.
+8. Persists the session and summarizes output.
 
 ## Development
 
 ```bash
-npm install
+npm run dev
 npm run typecheck
 npm run lint
 npm test
 npm run build
 ```
 
-## Roadmap
+## Example Screen
 
-- Better model discovery per provider
-- Theme customization
-- Export chat transcripts
-- More robust keyboard handling across terminal emulators
-- Coding agent features later, not in v0.2.0
+```txt
+OpenSyntax | openai/gpt-4o-mini | shell-safe | /repo
+Type /help for commands. Ctrl+C or /exit to quit.
+
+you: fix TypeScript errors
+· tool git_status
+· thinking with openai/gpt-4o-mini
+· tool execute_command
+· tool patch_file
+```
