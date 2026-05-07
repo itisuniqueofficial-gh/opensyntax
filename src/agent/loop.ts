@@ -12,9 +12,10 @@ import {initialPlan} from './planner.js';
 import {createModelProvider} from './orchestrator.js';
 import {systemPrompt} from './prompts.js';
 import {assistantChunk, panel, status} from '../ui/renderer.js';
-import {showThinkingStep, showToolDecision, showReasoningSummary} from '../ui/thinking.js';
+import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
 import {modelUnavailableMessage, fallbackModel} from '../model/capabilities.js';
 import {modelsForProvider} from '../model/registry.js';
+import {ProviderError} from '../model/provider.js';
 
 export class AgentLoop {
   private config: AppConfig;
@@ -78,7 +79,9 @@ export class AgentLoop {
             continue;
           }
         }
-        panel('Model Error', message);
+        // Show full error body for provider errors so users can diagnose 400s
+        const detail = error instanceof ProviderError && error.body ? `\n\n${error.body.slice(0, 500)}` : '';
+        panel('Model Error', `${message}${detail}`);
         break;
       }
 

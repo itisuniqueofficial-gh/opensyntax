@@ -65,8 +65,23 @@ export class OpenAIProvider implements ModelProvider {
 function toOpenAIMessages(messages: ChatMessage[], systemPrompt?: string) {
   const converted: any[] = systemPrompt ? [{role: 'system', content: systemPrompt}] : [];
   for (const message of messages) {
-    if (message.role === 'tool') converted.push({role: 'tool', tool_call_id: message.toolCallId, content: message.content});
-    else converted.push({role: message.role, content: message.content, tool_calls: message.toolCalls?.map((call) => ({id: call.id, type: 'function', function: {name: call.name, arguments: JSON.stringify(call.arguments)}}))});
+    if (message.role === 'tool') {
+      converted.push({role: 'tool', tool_call_id: message.toolCallId, content: message.content});
+    } else if (message.role === 'assistant') {
+      const msg: any = {role: 'assistant', content: message.content};
+      // Only include tool_calls when present — omitting the field entirely avoids
+      // 400 errors from providers (e.g. NVIDIA NIM) that reject null/undefined values.
+      if (message.toolCalls?.length) {
+        msg.tool_calls = message.toolCalls.map((call) => ({
+          id: call.id,
+          type: 'function',
+          function: {name: call.name, arguments: JSON.stringify(call.arguments)}
+        }));
+      }
+      converted.push(msg);
+    } else {
+      converted.push({role: message.role, content: message.content});
+    }
   }
   return converted;
 }
