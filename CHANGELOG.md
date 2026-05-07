@@ -1,3 +1,32 @@
+## [0.11.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.10.0...v0.11.0) (2026-05-07)
+
+### Features
+
+* advanced Markdown rendering, streaming renderer, table/diff/link/message renderers, UI config system ([697d582](https://github.com/itisuniqueofficial-gh/opensyntax/commit/697d58255ef52c8ed072a4e6d8e68d49175d2f16))
+
+
+# OpenSyntax v0.11.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: advanced Markdown rendering, streaming renderer, table/diff/link/message renderers, UI config system
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.10.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.9.1...v0.10.0) (2026-05-07)
 
 ### Features
