@@ -6,7 +6,7 @@ import {configDir} from '../config/config.js';
 import {parseRuleFile} from './parser.js';
 import {mergeRules} from './merger.js';
 import {getCachedRules, setCachedRules} from './cache.js';
-import type {RuleContext, RuleFile} from './types.js';
+import {emptyRuleContext, type RuleContext, type RuleFile} from './types.js';
 
 const RULE_NAMES = ['OPENSYNTAX.md', path.join('.opensyntax', 'OPENSYNTAX.md')];
 
@@ -23,6 +23,15 @@ export async function loadWorkspaceRules(cwd = process.cwd()): Promise<RuleConte
   return setCachedRules(key, mergeRules(files));
 }
 
+export async function loadWorkspaceRulesSafe(cwd = process.cwd(), onError?: (error: unknown) => void): Promise<RuleContext> {
+  try {
+    return await loadWorkspaceRules(cwd);
+  } catch (error) {
+    onError?.(error);
+    return {...emptyRuleContext, loadedAt: new Date().toISOString()};
+  }
+}
+
 export async function findRuleCandidates(cwd: string): Promise<Array<{path: string; scope: 'global' | 'workspace'; depth: number; mtimeMs: number}>> {
   const ignores = await loadOpenSyntaxIgnore(cwd);
   const dirs = ancestorDirs(cwd);
@@ -33,8 +42,7 @@ export async function findRuleCandidates(cwd: string): Promise<Array<{path: stri
   if (homePath !== globalPath) await pushIfExists(candidates, homePath, 'global', 1);
   for (let index = 0; index < dirs.length; index++) {
     const dir = dirs[index];
-    const relativeDir = relativeFromCwd(cwd, dir);
-    if (relativeDir && ignores.ignores(relativeDir)) continue;
+    if (ignores.ignores(dir)) continue;
     for (const name of RULE_NAMES) await pushIfExists(candidates, path.join(dir, name), 'workspace', 10 + index);
   }
   return uniqueByPath(candidates).sort((a, b) => a.depth - b.depth);
@@ -58,17 +66,33 @@ function ancestorDirs(cwd: string): string[] {
   return dirs;
 }
 
-async function loadOpenSyntaxIgnore(cwd: string) {
-  const ig = ignore().add(['node_modules', 'dist', 'build', 'coverage', '.next', '.cache']);
+async function loadOpenSyntaxIgnore(cwd: string): Promise<{ignores(target: string): boolean}> {
+  const matchers: Array<{base: string; ignores(path: string): boolean}> = [];
   for (const dir of ancestorDirs(cwd)) {
+    const ig = ignore().add(['node_modules', 'dist', 'build', 'coverage', '.next', '.cache']);
     try { ig.add(await readFile(path.join(dir, '.opensyntaxignore'), 'utf8')); } catch {}
+    matchers.push({base: dir, ignores: (target) => ig.ignores(target)});
   }
-  return ig;
+  return {
+    ignores(target: string): boolean {
+      return matchers.some((matcher) => {
+        const ignorePath = toIgnorePath(matcher.base, target);
+        return ignorePath ? matcher.ignores(ignorePath) : false;
+      });
+    }
+  };
 }
 
-function relativeFromCwd(cwd: string, target: string): string {
-  const relative = path.relative(cwd, target).replaceAll('\\', '/');
-  return relative && !relative.startsWith('..') ? relative : '';
+export function toIgnorePath(workspaceRoot: string, filePath: string): string | null {
+  const pathApi = isWindowsPath(workspaceRoot) || isWindowsPath(filePath) ? path.win32 : path;
+  const relative = pathApi.relative(workspaceRoot, filePath).trim();
+  if (!relative) return null;
+  if (relative === '..' || relative.startsWith(`..${pathApi.sep}`) || pathApi.isAbsolute(relative)) return null;
+  return relative.split(pathApi.sep).join('/');
+}
+
+function isWindowsPath(value: string): boolean {
+  return /^[a-zA-Z]:[\\/]/.test(value) || value.includes('\\');
 }
 
 function uniqueByPath<T extends {path: string}>(items: T[]): T[] {

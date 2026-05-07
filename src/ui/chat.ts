@@ -12,7 +12,7 @@ import {header} from './renderer.js';
 import {workspaceRoot} from '../utils/paths.js';
 import {runDoctor} from '../doctor/doctor.js';
 import {renderRules, renderRulesDebug} from '../rules/context.js';
-import {loadWorkspaceRules} from '../rules/loader.js';
+import {loadWorkspaceRulesSafe} from '../rules/loader.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -54,7 +54,9 @@ async function handleRules(args: string[], loop: AgentLoop): Promise<void> {
   const action = args[0];
   if (action === 'debug') panel('Rules Debug', renderRulesDebug(loop.rulesContext()));
   else if (action === 'reload') {
-    const next = await loadWorkspaceRules(workspaceRoot());
+    const next = await loadWorkspaceRulesSafe(workspaceRoot(), () => {
+      panel('Rules Warning', 'Warning: Could not load OPENSYNTAX.md rules.\nOpenSyntax will continue without workspace instructions.');
+    });
     loop.updateRules(next);
     panel('Rules Reloaded', renderRules(next));
   } else if (action === 'open') {

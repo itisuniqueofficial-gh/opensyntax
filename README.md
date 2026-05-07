@@ -10,7 +10,7 @@ OpenSyntax is a fast, workspace-aware AI coding agent that runs where developers
 [![npm downloads](https://img.shields.io/npm/dm/opensyntax?color=22c55e)](https://www.npmjs.com/package/opensyntax)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22%20LTS%20recommended-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Bun](https://img.shields.io/badge/Bun-supported-000000?logo=bun&logoColor=white)](https://bun.sh/)
 [![GitHub stars](https://img.shields.io/github/stars/itisuniqueofficial-gh/opensyntax?style=flat&logo=github)](https://github.com/itisuniqueofficial-gh/opensyntax/stargazers)
 [![Release](https://github.com/itisuniqueofficial-gh/opensyntax/actions/workflows/release.yml/badge.svg)](https://github.com/itisuniqueofficial-gh/opensyntax/actions/workflows/release.yml)
@@ -78,7 +78,7 @@ Use OpenSyntax when you want to:
 
 ### Requirements
 
-- Node.js `>=20`
+- Node.js `>=20`; Node.js 22 LTS is recommended for the most predictable npm dependency support
 - npm `>=10` recommended
 - Bun supported for global installation and local development
 - Git installed for repository-aware features

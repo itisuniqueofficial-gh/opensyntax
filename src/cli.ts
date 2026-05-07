@@ -11,7 +11,7 @@ import {ensureOnboarded, logoutProviderPrompt, runProviderSetup, runSettings} fr
 import {hasConfiguredProvider, resolveModelConfig} from './auth/manager.js';
 import {showAuth, showModels, showProviders} from './commands/providers.js';
 import {runDoctor} from './doctor/doctor.js';
-import {loadWorkspaceRules} from './rules/loader.js';
+import {loadWorkspaceRulesSafe} from './rules/loader.js';
 import {watchRules} from './rules/watcher.js';
 import {createStarterRules} from './rules/context.js';
 
@@ -23,7 +23,8 @@ const program = new Command()
   .option('-m, --model <model>', 'override model')
   .option('-p, --provider <provider>', 'openai, anthropic, gemini, openrouter, groq, together, nvidia, deepseek, mistral, ollama, lmstudio, or azure-openai')
   .option('--permission <level>', 'read-only, workspace-write, shell-safe, or full-access')
-  .option('--session <id>', 'resume a specific session');
+  .option('--session <id>', 'resume a specific session')
+  .option('--debug', 'show debug details for optional subsystem failures');
 
 program.command('auth')
   .description('Connect or update an AI provider')
@@ -80,7 +81,7 @@ rulesCommand.command('init')
   .action(async () => { logger.success(`Created ${await createStarterRules(workspaceRoot())}`); });
 
 program.argument('[prompt...]', 'optional one-shot request')
-  .action(async (promptParts: string[], options: {model?: string; provider?: string; permission?: string; session?: string}) => {
+  .action(async (promptParts: string[], options: {model?: string; provider?: string; permission?: string; session?: string; debug?: boolean}) => {
     const workspace = workspaceRoot();
     const prompt = promptParts.join(' ').trim();
     if (!await hasConfiguredProvider()) {
@@ -90,7 +91,7 @@ program.argument('[prompt...]', 'optional one-shot request')
     const loaded = await loadConfig({model: options.model, provider: normalizeProvider(options.provider) as any, permission: options.permission as any});
     const config = await resolveModelConfig(loaded, options.provider);
     const session = await loadOrCreateSession(workspace, options.session);
-    const rules = await loadWorkspaceRules(workspace);
+    const rules = await loadRulesForCli(workspace, options.debug);
     panel('Rules', rules.files.length ? `✓ Loaded ${rules.files.length} OPENSYNTAX.md file${rules.files.length === 1 ? '' : 's'}\n✓ Applied workspace instructions` : 'No OPENSYNTAX.md found.');
     const loop = new AgentLoop({workspace, config, session, rules});
     const watcher = watchRules(workspace, rules, (next) => {
@@ -102,6 +103,15 @@ program.argument('[prompt...]', 'optional one-shot request')
     if (prompt) await loop.run(prompt);
     else await runInteractive(loop);
   });
+
+async function loadRulesForCli(workspace: string, debug = false) {
+  return loadWorkspaceRulesSafe(workspace, (error) => {
+    logger.warn('Warning: Could not load OPENSYNTAX.md rules.');
+    logger.warn('OpenSyntax will continue without workspace instructions.');
+    logger.warn('Run with --debug for details.');
+    if (debug) logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
+  });
+}
 
 function normalizeProvider(provider?: string): string | undefined {
   if (!provider) return undefined;
