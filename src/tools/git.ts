@@ -16,7 +16,7 @@ export const gitStatusTool = tool({
       git(context.workspace, ['status', '--short', '--branch']),
       git(context.workspace, ['log', '--oneline', '-5'])
     ]);
-    if (!inside.ok) return {ok: false, output: 'Not a git repository'};
+    if (!inside.ok) return {ok: true, output: 'No Git repository detected in current workspace.\n\nGit features disabled for this session.\n\nYou can:\n- continue normally\n- initialize git\n- open another workspace', data: {git: false}};
     return {ok: true, output: [`Branch: ${branch.output || 'detached'}`, status.output, 'Recent commits:', log.output].join('\n'), data: {branch: branch.output, status: status.output}};
   }
 });

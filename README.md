@@ -126,6 +126,12 @@ Configure your provider:
 opensyntax config --provider openai --model gpt-4o-mini --api-key "$OPENAI_API_KEY"
 ```
 
+Or launch the guided provider setup wizard:
+
+```bash
+opensyntax auth
+```
+
 Ask a one-shot coding question:
 
 ```bash
@@ -170,6 +176,14 @@ Supported provider values:
 - `anthropic`
 - `gemini`
 - `openrouter`
+- `groq`
+- `together`
+- `nvidia`
+- `deepseek`
+- `mistral`
+- `ollama`
+- `lmstudio`
+- `azure-openai`
 
 Supported permission levels:
 
@@ -227,6 +241,30 @@ opensyntax config \
   --base-url https://openrouter.ai/api/v1
 ```
 
+Local providers:
+
+```bash
+opensyntax auth --provider ollama
+opensyntax auth --provider lmstudio
+```
+
+### Authentication Storage
+
+Provider credentials are stored in `~/.opensyntax/providers.json`. Secrets are encrypted locally using Node.js crypto and are never printed in full. Environment variables remain supported as a fallback for CI and ephemeral environments.
+
+Authentication commands:
+
+```bash
+opensyntax auth              # connect or update a provider
+opensyntax login             # alias for auth
+opensyntax logout openai     # remove stored credentials
+opensyntax providers         # list provider connection state
+opensyntax models            # discover models for current provider
+opensyntax settings          # interactive settings manager
+```
+
+Browser and device-code authentication hooks are built into the architecture. Providers that do not expose a public CLI OAuth/token exchange flow fall back to API key authentication with a clear message.
+
 ## CLI Usage
 
 ```bash
@@ -250,6 +288,12 @@ Subcommands:
 | Command | Description |
 | --- | --- |
 | `opensyntax config` | Write local provider, model, API key, base URL, and permission settings. |
+| `opensyntax auth` | Launch the provider setup wizard. |
+| `opensyntax login` | Alias for `auth`. |
+| `opensyntax logout [provider]` | Remove stored provider credentials. |
+| `opensyntax providers` | List supported and connected providers. |
+| `opensyntax models [provider]` | Discover available models where the provider exposes a models endpoint. |
+| `opensyntax settings` | Open the interactive settings manager. |
 | `opensyntax doctor` | Print workspace, provider, model, API key, and permission diagnostics. |
 
 ## Interactive Commands
@@ -260,12 +304,18 @@ Inside the interactive terminal session, use slash commands for fast control:
 | --- | --- |
 | `/help` | Show available interactive commands. |
 | `/clear` | Clear the terminal screen. |
+| `/provider` | Switch the default provider. |
+| `/providers` | Show provider connection state. |
 | `/model` | Show the active provider and model. |
 | `/model <name>` | Switch the active model for the current session. |
+| `/models` | List discovered models for the active provider. |
 | `/tools` | List registered tools available to the agent. |
 | `/plan` | Show the current task plan and progress state. |
 | `/session` | List saved local sessions. |
 | `/diff` | Ask the agent to inspect and summarize the current git diff. |
+| `/auth` | Show connected authentication state. |
+| `/login` | Connect or update a provider. |
+| `/logout` | Remove stored provider credentials. |
 | `/undo` | Show the safe reversal workflow. OpenSyntax does not run destructive undo automatically. |
 | `/exit` | Exit the interactive session. |
 
