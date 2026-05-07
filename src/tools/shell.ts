@@ -1,31 +1,50 @@
-import {execa} from 'execa';
 import {z} from 'zod';
+import {classifyCommand} from '../system/command-risk.js';
+import {detectEnvironment} from '../system/environment.js';
+import {runCommand} from './command-runner.js';
 import {tool} from './types.js';
 
-const shellSchema = z.object({command: z.string(), intent: z.string(), timeoutMs: z.number().int().positive().max(600000).default(120000)});
-const riskyPatterns = [/\brm\b/i, /\bsudo\b/i, /git\s+reset/i, /git\s+clean/i, /push\s+--force/i, /chmod\b/i, /chown\b/i, /docker\s+.*prune/i, /(apt|brew|yum|pacman|winget|choco)\s+(install|remove)/i, /Remove-Item\b.*(-Recurse|\/s)/i];
+const shellSchema = z.object({
+  command: z.string(),
+  cwd: z.string().optional(),
+  timeoutMs: z.number().int().positive().max(30 * 60 * 1000).default(120000),
+  permission: z.enum(['safe', 'workspace-write', 'full-os']).optional(),
+  reason: z.string().optional(),
+  intent: z.string().optional(),
+  env: z.record(z.string()).optional()
+});
 
 export const executeCommandTool = tool({
   name: 'execute_command',
-  description: 'Execute a non-interactive shell command in the workspace with live output, timeout, and risky command approval.',
+  description: 'Execute a non-interactive terminal command with OS-aware risk classification, live output, timeout, and permission prompts.',
   schema: shellSchema,
   async execute(input, context) {
-    if (context.permission === 'read-only' || context.permission === 'workspace-write') throw new Error('Shell execution is not allowed by current permission level');
     enforceRuleShellRestrictions(input.command, context.rules?.shellRules ?? context.rules?.restrictions ?? []);
-    const risky = riskyPatterns.some((pattern) => pattern.test(input.command));
-    if (risky && context.permission !== 'full-access') {
-      const approved = await context.askPermission({action: input.command, reason: input.intent, risk: 'high'});
-      if (!approved) return {ok: false, output: 'Command cancelled by user'};
-    }
-    context.log(`$ ${input.command}`);
-    const subprocess = execa(input.command, {cwd: context.workspace, shell: true, timeout: input.timeoutMs, reject: false, signal: context.signal});
-    let output = '';
-    subprocess.stdout?.on('data', (chunk) => { const text = String(chunk); output += text; context.log(text); });
-    subprocess.stderr?.on('data', (chunk) => { const text = String(chunk); output += text; context.log(text); });
-    const result = await subprocess;
-    return {ok: result.exitCode === 0, output: output.trim() || `Command exited with ${result.exitCode}`, data: {exitCode: result.exitCode, command: input.command}};
+    const result = await runCommand({command: input.command, cwd: input.cwd, timeoutMs: input.timeoutMs, permission: input.permission, reason: input.reason ?? input.intent ?? 'Run requested terminal command', env: input.env}, context);
+    return {
+      ok: result.ok,
+      output: formatCommandResult(result),
+      tool: 'execute_command',
+      changed: !['read', 'safe'].includes(result.risk.risk),
+      message: result.ok ? 'Command completed' : 'Command failed',
+      data: result
+    };
   }
 });
+
+export async function terminalSummary(workspace: string): Promise<string> {
+  const env = await detectEnvironment();
+  return [`OS: ${env.platform}${env.distro ? `/${env.distro}` : ''}`, `Shell: ${env.shell}`, `WSL: ${env.isWSL ? 'yes' : 'no'}`, `CWD: ${workspace}`, `Home: ${env.home}`, `Node: ${env.node}`].join('\n');
+}
+
+export function commandRiskSummary(command: string): string {
+  const risk = classifyCommand(command);
+  return [`Command: ${command}`, `Risk: ${risk.risk}`, `Approval: ${risk.requiresApproval ? 'required' : 'not required'}`, `Typed confirmation: ${risk.requiresTypedConfirmation ? 'required' : 'not required'}`, ...risk.reasons.map((reason) => `- ${reason}`)].join('\n');
+}
+
+function formatCommandResult(result: Awaited<ReturnType<typeof runCommand>>): string {
+  return JSON.stringify({ok: result.ok, command: result.command, cwd: result.cwd, exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr, durationMs: result.durationMs, timedOut: result.timedOut, cancelled: result.cancelled, recovery: result.recovery}, null, 2);
+}
 
 function enforceRuleShellRestrictions(command: string, rules: string[]): void {
   const lower = command.toLowerCase();

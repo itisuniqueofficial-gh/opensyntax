@@ -26,6 +26,8 @@ export type OperationType =
   | 'rename-folder'
   | 'shell';
 
+export type CommandPermissionMode = 'read-only' | 'workspace-safe' | 'workspace-write' | 'shell-safe' | 'full-os' | 'danger';
+
 export type PermissionDecision = {
   allowed: boolean;
   requiresApproval: boolean;
@@ -49,6 +51,8 @@ export function checkPermission(level: PermissionLevel, operation: OperationType
       return {allowed: true, requiresApproval: false};
 
     case 'full-access':
+    case 'full-os':
+    case 'danger':
       // Deletes still require approval even in full-access
       if (operation === 'delete-file' || operation === 'delete-folder') return {allowed: true, requiresApproval: true, reason: 'Delete operations require approval'};
       return {allowed: true, requiresApproval: false};
@@ -71,5 +75,10 @@ export function canWrite(level: PermissionLevel): boolean {
 
 /** Check if the permission level allows shell execution. */
 export function canShell(level: PermissionLevel): boolean {
-  return level === 'shell-safe' || level === 'full-access';
+  return level === 'shell-safe' || level === 'full-access' || level === 'full-os' || level === 'danger';
+}
+
+export function normalizeCommandPermission(level: PermissionLevel | CommandPermissionMode): CommandPermissionMode {
+  if (level === 'full-access') return 'full-os';
+  return level;
 }

@@ -1,7 +1,12 @@
 import type {ModelConfig} from '../model/types.js';
 
 export const defaultConfig: ModelConfig & {
-  permission: 'read-only' | 'workspace-write' | 'shell-safe' | 'full-access';
+  permission: 'read-only' | 'workspace-safe' | 'workspace-write' | 'shell-safe' | 'full-access' | 'full-os' | 'danger';
+  commandTimeoutMs: number;
+  allowFullOsCommands: boolean;
+  requireApprovalForInstall: boolean;
+  requireApprovalForNetwork: boolean;
+  shellMode: 'read-only' | 'workspace-safe' | 'workspace-write' | 'shell-safe' | 'full-os' | 'danger';
   thinkingDisplay: boolean;
   showReasoningSummary: boolean;
   modelFallback: boolean;
@@ -21,6 +26,11 @@ export const defaultConfig: ModelConfig & {
   maxTokens: Number(process.env.OPENSYNTAX_MAX_TOKENS ?? 4096),
   showToolSummary: false,
   permission: 'shell-safe',
+  commandTimeoutMs: 120000,
+  allowFullOsCommands: false,
+  requireApprovalForInstall: true,
+  requireApprovalForNetwork: true,
+  shellMode: 'shell-safe',
   thinkingDisplay: true,
   showReasoningSummary: false,
   modelFallback: true,

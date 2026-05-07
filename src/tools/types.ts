@@ -2,7 +2,7 @@ import {z} from 'zod';
 import type {ToolSpec} from '../model/types.js';
 import type {RuleContext} from '../rules/types.js';
 
-export type PermissionLevel = 'read-only' | 'workspace-write' | 'shell-safe' | 'full-access';
+export type PermissionLevel = 'read-only' | 'workspace-safe' | 'workspace-write' | 'shell-safe' | 'full-access' | 'full-os' | 'danger';
 
 export type ToolContext = {
   workspace: string;

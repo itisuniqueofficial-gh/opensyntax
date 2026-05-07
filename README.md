@@ -595,6 +595,25 @@ OpenSyntax is designed to be useful without being reckless.
 - **Permission levels** let teams choose the right level of automation for each repository.
 - **No automatic destructive undo**; reversals should be requested explicitly and reviewed through git diff.
 
+## Terminal Access
+
+OpenSyntax detects the active OS and shell before running commands. It supports Windows, macOS, Linux, WSL, Ubuntu, Debian, Kali, Arch, Fedora, CentOS, Alpine, PowerShell, PowerShell Core, CMD, Bash, Zsh, Fish, and Git Bash detection.
+
+Command execution uses `execute_command`, which returns structured output including `command`, `cwd`, `exitCode`, `stdout`, `stderr`, `durationMs`, `timedOut`, and `cancelled`. Stdout and stderr stream live in the terminal and are secret-masked before display or model feedback.
+
+Terminal permission modes:
+
+| Mode | Behavior |
+| --- | --- |
+| `read-only` | Allows read-only commands such as `dir`, `ls`, `cat`, `type`, `git status`, `git diff`, and version checks. |
+| `workspace-safe` | Allows tests, builds, lint, typecheck, git read operations, and package-manager read operations. |
+| `workspace-write` | Allows workspace-generating commands and dependency installs with approval. |
+| `shell-safe` | Allows normal developer commands; prompts for installs, network, unknown write, and risky commands. |
+| `full-os` | Requires explicit approval for OS-level commands such as `apt install`, `winget install`, `brew install`, `systemctl`, `netsh`, or `setx`. |
+| `danger` | Requires typed confirmation for destructive commands such as `rm -rf`, `Remove-Item -Recurse -Force`, `git reset --hard`, `git clean -fd`, `format`, `diskpart`, `mkfs`, or `docker system prune`. |
+
+OpenSyntax blocks downloaded script execution such as `curl ... | sh`, `wget ... | bash`, and `Invoke-WebRequest ... | iex` unless the user explicitly confirms the exact dangerous command.
+
 Example folder-delete approval:
 
 ```txt

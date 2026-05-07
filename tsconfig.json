@@ -25,6 +25,7 @@
     "src/doctor/**/*.ts",
     "src/providers/**/*.ts",
     "src/rules/**/*.ts",
+    "src/system/**/*.ts",
     "src/tools/**/*.ts",
     "src/model/**/*.ts",
     "src/ui/**/*.ts",
