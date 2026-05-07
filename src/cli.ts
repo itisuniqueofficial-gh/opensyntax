@@ -11,12 +11,14 @@ import {ensureOnboarded, logoutProviderPrompt, runProviderSetup} from './ui/onbo
 import {runSettingsCommand} from './commands/settings.js';
 import {hasConfiguredProvider, resolveModelConfig} from './auth/manager.js';
 import {showAuth, showModels, showProviders} from './commands/providers.js';
-import {showModelsCommand} from './commands/models.js';
+import {showModelsCommand, refreshModelsCommand} from './commands/models.js';
 import {runDoctor} from './doctor/doctor.js';
 import {loadWorkspaceRulesSafe} from './rules/loader.js';
 import {watchRules} from './rules/watcher.js';
 import {createStarterRules} from './rules/context.js';
 import {setThinkingEnabled, setReasoningSummaryEnabled} from './ui/thinking.js';
+import {buildRuntimeState, refreshProviderModels} from './model/runtime.js';
+import {validateProviderModel} from './model/validation.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -49,9 +51,12 @@ program.command('providers')
   .action(showProviders);
 
 program.command('models')
-  .description('List models for the default or selected provider')
-  .argument('[provider]', 'provider id or "all"')
-  .action(async (provider?: string) => { await showModelsCommand(provider, provider === 'all'); });
+  .description('List models for the active or specified connected provider')
+  .argument('[provider]', 'provider id, "all", or "refresh"')
+  .action(async (provider?: string) => {
+    if (provider === 'refresh') await refreshModelsCommand();
+    else await showModelsCommand(provider, provider === 'all');
+  });
 
 program.command('settings')
   .description('Open interactive settings manager')
@@ -107,6 +112,10 @@ program.argument('[prompt...]', 'optional one-shot request')
     header(workspace, loop.modelName(), config.permission);
     if (rules.files.length) logger.success('Workspace instructions loaded');
     else if (options.debug) logger.status('No workspace instructions found.');
+
+    // Startup validation — check provider/model and show warnings
+    await startupValidation(config.provider, config.model, options.debug);
+
     if (prompt) await loop.run(prompt);
     else await runInteractive(loop);
   });
@@ -118,6 +127,18 @@ async function loadRulesForCli(workspace: string, debug = false) {
     logger.warn('Run with --debug for details.');
     if (debug) logger.error(error instanceof Error ? (error.stack ?? error.message) : String(error));
   });
+}
+
+async function startupValidation(providerId: string, modelId: string, debug = false): Promise<void> {
+  try {
+    const runtime = await buildRuntimeState(providerId, modelId);
+    for (const warning of runtime.warnings) logger.warn(warning);
+    if (!runtime.toolsEnabled) {
+      logger.status(`Tool calling disabled for ${providerId}/${modelId} — text-only mode`);
+    }
+  } catch (error) {
+    if (debug) logger.error(`Startup validation failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 function normalizeProvider(provider?: string): string | undefined {

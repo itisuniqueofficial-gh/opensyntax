@@ -5,6 +5,8 @@ import {maskSecret} from '../auth/storage.js';
 import {getProvider, requireProvider} from '../providers/registry.js';
 import {startBrowserAuth, startDeviceCodeAuth} from '../auth/oauth.js';
 import {panel} from './renderer.js';
+import {refreshProviderModels} from '../model/runtime.js';
+import {invalidateModelCache} from '../model/cache.js';
 
 export async function ensureOnboarded(): Promise<boolean> {
   panel('OpenSyntax', `${chalk.bold('Terminal AI Coding Assistant')}\n\nNo AI providers configured. Connect a provider to continue.`);
@@ -33,6 +35,9 @@ export async function runProviderSetup(providerId?: string): Promise<boolean> {
     const baseUrl = await askBaseUrl(provider.id, provider.baseUrl);
     const model = await askModel(provider.defaultModel);
     await connectLocalProvider({providerId: provider.id, baseUrl, model});
+    // Invalidate cache and pre-fetch models for the new provider
+    await invalidateModelCache(provider.id);
+    await refreshProviderModels(provider.id).catch(() => undefined);
     panel('Connected', `${chalk.green('✓')} ${provider.name} configured\n${chalk.green('✓')} Default model: ${model}`);
     return true;
   }
@@ -56,6 +61,9 @@ export async function runProviderSetup(providerId?: string): Promise<boolean> {
   const model = await askModel(provider.defaultModel);
   const shouldValidate = (await prompts({type: 'confirm', name: 'value', message: 'Validate provider now?', initial: true})).value === true;
   const result = await connectApiKeyProvider({providerId: provider.id, apiKey, baseUrl, model, validate: shouldValidate});
+  // Invalidate cache and pre-fetch models for the new provider
+  await invalidateModelCache(provider.id);
+  await refreshProviderModels(provider.id).catch(() => undefined);
   panel(result.validation.ok ? 'Connected' : 'Connected With Warning', [
     `${result.validation.ok ? chalk.green('✓') : chalk.yellow('!')} ${provider.name} ${result.validation.message}`,
     `${chalk.green('✓')} API key saved as ${maskSecret(apiKey)}`,
@@ -87,11 +95,13 @@ export async function runSettings(): Promise<void> {
 export async function switchProviderPrompt(): Promise<string | undefined> {
   const {listConnectedProviders, setDefaultProvider} = await import('../auth/manager.js');
   const providers = await listConnectedProviders();
-  if (!providers.length) { panel('Providers', 'No connected providers.'); return undefined; }
-  const providerId = (await prompts({type: 'select', name: 'value', message: 'Default provider', choices: providers.map((item) => ({title: `${item.name}${item.isDefault ? ' (current)' : ''}`, value: item.providerId}))})).value;
+  if (!providers.length) { panel('Providers', 'No connected providers. Run: opensyntax auth'); return undefined; }
+  const providerId = (await prompts({type: 'select', name: 'value', message: 'Switch to provider', choices: providers.map((item) => ({title: `${item.isDefault ? '● ' : '  '}${item.name}`, value: item.providerId, description: `model: ${item.model}`}))})).value;
   if (!providerId) return undefined;
   await setDefaultProvider(providerId);
-  panel('Provider Updated', `Default provider set to ${getProvider(providerId)?.name ?? providerId}`);
+  // Pre-fetch models for the newly active provider
+  await refreshProviderModels(providerId).catch(() => undefined);
+  panel('Provider Updated', `Active provider: ${getProvider(providerId)?.name ?? providerId}`);
   return providerId;
 }
 

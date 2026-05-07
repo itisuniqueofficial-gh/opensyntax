@@ -6,7 +6,7 @@ import {panel} from './renderer.js';
 import {promptUser} from './prompts.js';
 import {logoutProviderPrompt, runProviderSetup, switchProviderPrompt} from './onboarding.js';
 import {showAuth, showModels, showProviders} from '../commands/providers.js';
-import {showModelsCommand, pickModelInteractive, listProviderSummary} from '../commands/models.js';
+import {showModelsCommand, pickModelInteractive, listProviderSummary, refreshModelsCommand} from '../commands/models.js';
 import {renderSettings} from '../commands/settings.js';
 import {showCapabilities} from '../commands/capabilities.js';
 import {showDebugPayload} from '../commands/debug.js';
@@ -39,7 +39,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   if (command === 'help') panel('Commands', [
     '/help', '/clear', '/exit',
     '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth',
-    '/model [name]', '/models [provider|all]', '/provider-list',
+    '/model [name]', '/models', '/models all', '/models refresh', '/provider-list',
     '/capabilities', '/debug provider',
     '/tools', '/plan', '/tasks', '/todo', '/progress',
     '/repo', '/architecture', '/dependencies', '/symbols [query]',
@@ -54,7 +54,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'clear') process.stdout.write('\x1Bc');
   else if (command === 'provider') await refreshProvider(loop, await switchProviderPrompt());
   else if (command === 'providers') await showProviders();
-  else if (command === 'provider-list') panel('Providers', listProviderSummary());
+  else if (command === 'provider-list') panel('Providers', await listProviderSummary());
   else if (command === 'model') {
     if (rest.length) {
       panel('Model', await loop.setModel(rest.join(' ')));
@@ -66,7 +66,10 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
       else panel('Model', loop.modelName());
     }
   }
-  else if (command === 'models') await showModelsCommand(rest[0], rest[0] === 'all');
+  else if (command === 'models') {
+    if (rest[0] === 'refresh') await refreshModelsCommand(rest[1]);
+    else await showModelsCommand(rest[0], rest[0] === 'all');
+  }
   else if (command === 'capabilities') {
     const config = await loadConfig();
     await showCapabilities(config.provider, config.model);
