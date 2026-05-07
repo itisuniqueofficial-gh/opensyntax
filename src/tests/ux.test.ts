@@ -3,6 +3,7 @@ import {suggestSlashCommands} from '../ui/autocomplete.js';
 import {noProviderState, noSessionsState, readyState} from '../ui/empty-state.js';
 import {renderHelp, renderHelpTopic} from '../ui/help.js';
 import {theme} from '../ui/theme.js';
+import {defaultConfig} from '../config/defaults.js';
 
 describe('user experience helpers', () => {
   it('renders categorized help with beginner commands', () => {
@@ -10,6 +11,8 @@ describe('user experience helpers', () => {
     expect(help).toContain('Chat');
     expect(help).toContain('/provider [id]');
     expect(help).toContain('/run <script>');
+    expect(help).toContain('/verify [objective]');
+    expect(help).toContain('fix build errors');
   });
 
   it('renders focused help topics', () => {
@@ -20,6 +23,12 @@ describe('user experience helpers', () => {
   it('suggests slash commands with fuzzy matching', () => {
     expect(suggestSlashCommands('/prov')).toEqual(expect.arrayContaining(['/provider', '/providers']));
     expect(suggestSlashCommands('/ses')).toContain('/sessions');
+    expect(suggestSlashCommands('/ver')).toContain('/verify');
+  });
+
+  it('defaults to beginner-friendly workspace write permissions', () => {
+    expect(defaultConfig.permission).toBe('workspace-write');
+    expect(defaultConfig.shellMode).toBe('workspace-write');
   });
 
   it('renders friendly empty states', () => {

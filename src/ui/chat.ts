@@ -28,6 +28,7 @@ import {renderCommandRisk, renderEnv, renderOS, renderPath, renderShell, renderT
 import {renderPermissions} from '../commands/permissions.js';
 import {commandForScript, renderScripts} from '../commands/scripts.js';
 import {executeCommandTool} from '../tools/shell.js';
+import {verifyWorkspaceTool} from '../tools/verification.js';
 import {renderHelp} from '../commands/help.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
@@ -122,6 +123,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'permissions') panel('Permissions', await renderPermissions(rest[0]));
   else if (command === 'scripts') panel('Scripts', await renderScripts(workspaceRoot()));
   else if (command === 'run') await runScript(rest.join(' '), loop);
+  else if (command === 'verify') await verifyWorkspace(rest.join(' '), loop);
   else if (command === 'command') panel('Command Risk', renderCommandRisk(rest.join(' ')));
   else if (command === 'env') panel('Environment', await renderEnv());
   else if (command === 'path') panel('PATH', renderPath());
@@ -140,6 +142,16 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'undo') panel('Undo', 'No automatic destructive undo is run. Use /diff, then ask for a specific safe reversal.');
   else panel('Unknown command', `/${command}`);
   return false;
+}
+
+async function verifyWorkspace(objective: string, loop: AgentLoop): Promise<void> {
+  try {
+    const config = await loadConfig();
+    const result = await verifyWorkspaceTool.execute({objective: objective || 'verify workspace', timeoutMs: config.commandTimeoutMs, stopOnFailure: true}, {workspace: workspaceRoot(), permission: config.permission, rules: loop.rulesContext(), log: (message) => process.stdout.write(message.endsWith('\n') ? message : `${message}\n`), askPermission: async (request) => (await import('../agent/permissions.js')).askPermission(request)});
+    panel(result.ok ? 'Verification Passed' : 'Verification Failed', result.output.slice(0, 6000));
+  } catch (error) {
+    panel('Verification', error instanceof Error ? error.message : String(error));
+  }
 }
 
 async function runScript(script: string, loop: AgentLoop): Promise<void> {

@@ -268,6 +268,13 @@ The runtime builds a compact context summary before model inference. It detects 
 
 For verification, the typed `verify_workspace` tool chooses safe commands from the objective and package scripts. Examples: `fix build errors` selects `build`; `fix TypeScript errors` selects `typecheck`; failing tests select `test`. Failed commands return structured summaries and retry advice so the agent can patch minimally and rerun the same verification.
 
+You can run the same verification pipeline directly:
+
+```txt
+/verify fix build errors
+/verify fix TypeScript errors
+```
+
 ### Config Command
 
 ```bash
@@ -294,6 +301,8 @@ Supported provider values:
 - `azure-openai`
 
 Supported permission levels:
+
+The default is `workspace-write`: OpenSyntax can make safe, reviewable workspace edits, but shell commands and destructive actions still require stricter permissions or approval.
 
 | Level | Allowed | Requires Approval | Blocked |
 | --- | --- | --- | --- |
@@ -733,7 +742,7 @@ Release commits are created as `chore(release): X.Y.Z [skip ci]` to prevent infi
 ### Terminal Session
 
 ```txt
-OpenSyntax | openai/gpt-4o-mini | shell-safe | /repo
+OpenSyntax | openai/gpt-4o-mini | workspace-write | /repo
 Type /help for commands. Ctrl+C or /exit to quit.
 
 you: fix TypeScript errors and run tests

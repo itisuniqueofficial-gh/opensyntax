@@ -19,7 +19,7 @@ const configSchema = z.object({
   allowFullOsCommands: z.boolean().default(false),
   requireApprovalForInstall: z.boolean().default(true),
   requireApprovalForNetwork: z.boolean().default(true),
-  shellMode: z.enum(['read-only', 'workspace-safe', 'workspace-write', 'shell-safe', 'full-os', 'danger']).default('shell-safe'),
+  shellMode: z.enum(['read-only', 'workspace-safe', 'workspace-write', 'shell-safe', 'full-os', 'danger']).default(defaultConfig.shellMode),
   thinkingDisplay: z.boolean().default(true),
   showReasoningSummary: z.boolean().default(false),
   modelFallback: z.boolean().default(true),

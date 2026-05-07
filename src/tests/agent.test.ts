@@ -80,6 +80,8 @@ describe('fullscreen renderer', () => {
     const rendered = renderFullscreen({workspace: 'repo', model: 'openai/gpt-4o-mini', permission: 'shell-safe', session: s, output: 'verified'});
     expect(rendered).toContain('OpenSyntax');
     expect(rendered).toContain('verified');
+    expect(rendered).toContain('Input');
+    expect(rendered).toContain('Context');
   });
 });
 
