@@ -1,3 +1,32 @@
+## [0.8.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.7.1...v0.8.0) (2026-05-07)
+
+### Features
+
+* advanced provider/model system, thinking UI, full file permissions and workspace tools ([7ceccec](https://github.com/itisuniqueofficial-gh/opensyntax/commit/7ceccecf4b8f9f4d847de58001014e1d335e5594))
+
+
+# OpenSyntax v0.8.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: advanced provider/model system, thinking UI, full file permissions and workspace tools
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.7.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.7.0...v0.7.1) (2026-05-07)
 
 ### Documentation
