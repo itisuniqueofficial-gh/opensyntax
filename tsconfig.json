@@ -10,7 +10,11 @@
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "../ui-config.js": ["src/ui/ui-config.ts"]
+    }
   },
   "include": [
     "src/cli.ts",
