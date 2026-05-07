@@ -1,3 +1,32 @@
+## [0.12.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.12.0...v0.12.1) (2026-05-07)
+
+### Documentation
+
+* improve responsive docs layout ([57aa07d](https://github.com/itisuniqueofficial-gh/opensyntax/commit/57aa07dc473a849f0920b4e80336a7933dbaccec))
+
+
+# OpenSyntax v0.12.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- docs: improve responsive docs layout
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.12.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.11.1...v0.12.0) (2026-05-07)
 
 ### Features
