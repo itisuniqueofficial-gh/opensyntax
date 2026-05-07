@@ -42,8 +42,18 @@ export async function setDefaultProvider(providerId: string): Promise<void> {
 export async function resolveModelConfig(base: AppConfig, requestedProviderId?: string): Promise<AppConfig> {
   const file = await loadProviders();
   const selected = requestedProviderId ? file.providers[requestedProviderId] : file.providers[base.provider] ?? (file.defaultProvider ? file.providers[file.defaultProvider] : undefined);
-  if (!selected) return base;
-  return {...base, provider: mapProviderType(selected.providerId), model: selected.model, apiKey: selected.encryptedSecret ? decryptSecret(selected.encryptedSecret) : undefined, baseUrl: selected.baseUrl, permission: base.permission};
+  if (!selected) {
+    const provider = requestedProviderId ? getProvider(requestedProviderId) : getProvider(base.provider);
+    if (!provider) return base;
+    return {...base, provider: provider.id, providerName: provider.name, model: base.model || provider.defaultModel, apiKey: base.apiKey ?? envKey(provider), baseUrl: base.baseUrl ?? provider.baseUrl};
+  }
+  const provider = requireProvider(selected.providerId);
+  return {...base, provider: selected.providerId, providerName: provider.name, model: selected.model, apiKey: selected.encryptedSecret ? decryptSecret(selected.encryptedSecret) : envKey(provider), baseUrl: selected.baseUrl ?? provider.baseUrl, permission: base.permission};
+}
+
+export async function activeProviderId(requestedProviderId?: string): Promise<string | undefined> {
+  const file = await loadProviders();
+  return requestedProviderId ?? file.defaultProvider ?? Object.keys(file.providers)[0];
 }
 
 export async function providerHealth(providerId: string): Promise<{ok: boolean; message: string; models?: string[]}> {
@@ -75,10 +85,3 @@ export function envKey(provider: {apiKeyEnv?: readonly string[]}): string | unde
   return provider.apiKeyEnv?.map((name) => process.env[name]).find(Boolean);
 }
 
-function mapProviderType(providerId: string): AppConfig['provider'] {
-  const provider = requireProvider(providerId);
-  if (provider.type === 'anthropic') return 'anthropic';
-  if (provider.type === 'gemini') return 'gemini';
-  if (provider.id === 'openrouter') return 'openrouter';
-  return 'openai';
-}

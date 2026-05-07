@@ -42,10 +42,12 @@ export type ModelRequest = {
 };
 
 export type ModelConfig = {
-  provider: 'openai' | 'anthropic' | 'gemini' | 'openrouter';
+  provider: string;
+  providerName?: string;
   model: string;
   apiKey?: string;
   baseUrl?: string;
   temperature: number;
   maxTokens: number;
+  showToolSummary?: boolean;
 };

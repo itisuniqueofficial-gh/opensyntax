@@ -1,6 +1,7 @@
 import {zodToJsonSchema} from '../utils/schema.js';
 import {fetchJson, readError, type ModelProvider} from './provider.js';
 import type {ChatMessage, ModelConfig, ModelRequest, StreamEvent, ToolCall} from './types.js';
+import {getProvider} from '../providers/registry.js';
 
 export class OpenAIProvider implements ModelProvider {
   readonly id: string;
@@ -11,11 +12,15 @@ export class OpenAIProvider implements ModelProvider {
   constructor(config: ModelConfig) {
     this.id = config.provider;
     this.model = config.model;
-    this.baseUrl = (config.baseUrl ?? (config.provider === 'openrouter' ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1')).replace(/\/$/, '');
+    this.baseUrl = (config.baseUrl ?? getProvider(config.provider)?.baseUrl ?? (config.provider === 'openrouter' ? 'https://openrouter.ai/api/v1' : 'https://api.openai.com/v1')).replace(/\/$/, '');
     this.apiKey = config.apiKey;
   }
 
   async *stream(request: ModelRequest): AsyncGenerator<StreamEvent> {
+    const tools = request.tools.map((tool) => ({
+      type: 'function',
+      function: {name: tool.name, description: tool.description, parameters: zodToJsonSchema(tool.schema)}
+    }));
     const response = await fetchJson(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       signal: request.signal,
@@ -29,11 +34,7 @@ export class OpenAIProvider implements ModelProvider {
         temperature: request.temperature,
         max_tokens: request.maxTokens,
         messages: toOpenAIMessages(request.messages, request.systemPrompt),
-        tools: request.tools.map((tool) => ({
-          type: 'function',
-          function: {name: tool.name, description: tool.description, parameters: zodToJsonSchema(tool.schema)}
-        })),
-        tool_choice: 'auto'
+        ...(tools.length ? {tools, tool_choice: 'auto'} : {})
       })
     });
     if (!response.ok) await readError(response);

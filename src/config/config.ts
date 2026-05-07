@@ -6,12 +6,14 @@ import {ensureDir} from '../utils/paths.js';
 import {defaultConfig} from './defaults.js';
 
 const configSchema = z.object({
-  provider: z.enum(['openai', 'anthropic', 'gemini', 'openrouter']).default(defaultConfig.provider),
+  provider: z.string().default(defaultConfig.provider),
+  providerName: z.string().optional(),
   model: z.string().default(defaultConfig.model),
   apiKey: z.string().optional(),
   baseUrl: z.string().url().optional(),
   temperature: z.number().min(0).max(2).default(defaultConfig.temperature),
   maxTokens: z.number().int().positive().default(defaultConfig.maxTokens),
+  showToolSummary: z.boolean().default(false),
   permission: z.enum(['read-only', 'workspace-write', 'shell-safe', 'full-access']).default(defaultConfig.permission)
 });
 
@@ -45,6 +47,5 @@ function removeUndefined<T extends Record<string, unknown>>(value: T): Partial<T
 function sanitizeConfig(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object') return {};
   const next = {...value} as Record<string, unknown>;
-  if (!['openai', 'anthropic', 'gemini', 'openrouter'].includes(String(next.provider))) delete next.provider;
   return next;
 }

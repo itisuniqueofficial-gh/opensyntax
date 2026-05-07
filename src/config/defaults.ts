@@ -7,6 +7,7 @@ export const defaultConfig: ModelConfig & {permission: 'read-only' | 'workspace-
   baseUrl: process.env.OPENSYNTAX_BASE_URL,
   temperature: Number(process.env.OPENSYNTAX_TEMPERATURE ?? 0.2),
   maxTokens: Number(process.env.OPENSYNTAX_MAX_TOKENS ?? 4096),
+  showToolSummary: false,
   permission: 'shell-safe'
 };
 

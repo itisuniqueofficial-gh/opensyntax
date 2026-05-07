@@ -25,13 +25,15 @@ export class AgentLoop {
   }
 
   modelName() { return `${this.config.provider}/${this.config.model}`; }
+  providerName() { return this.config.providerName ?? this.config.provider; }
+  baseUrl() { return this.config.baseUrl; }
   toolNames() { return this.registry.names(); }
   async setModel(model: string) { this.config = {...this.config, model}; return `Model set to ${model}`; }
+  updateConfig(config: AppConfig) { this.config = config; }
 
   async run(request: string): Promise<void> {
     if (this.session.plan.length === 0) this.session.plan = initialPlan(request);
     this.session.messages.push({role: 'user', content: request});
-    await this.inspectGitOnce();
 
     for (let step = 0; step < 12; step++) {
       const provider = createModelProvider(this.config);
@@ -41,7 +43,7 @@ export class AgentLoop {
       try {
         for await (const event of provider.stream({
           messages: this.session.messages,
-          tools: this.registry.specs(),
+          tools: shouldEnableTools(request) ? this.registry.specs() : [],
           systemPrompt: systemPrompt(this.workspace, this.session.plan),
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens
@@ -56,7 +58,10 @@ export class AgentLoop {
 
       if (assistantText.trim()) process.stdout.write('\n');
       this.session.messages.push({role: 'assistant', content: assistantText, toolCalls});
-      if (toolCalls.length === 0) break;
+      if (toolCalls.length === 0) {
+        if (!assistantText.trim()) this.showEmptyResponseHelp();
+        break;
+      }
 
       for (const call of toolCalls) await this.executeTool(call);
       await saveSession(this.session);
@@ -65,23 +70,32 @@ export class AgentLoop {
     await saveSession(this.session);
   }
 
-  private async inspectGitOnce(): Promise<void> {
-    if (this.session.toolLog.some((item) => item.name === 'git_status')) return;
-    this.session.plan[0] = {...this.session.plan[0], state: 'in_progress'};
-    await this.executeTool({id: 'initial_git_status', name: 'git_status', arguments: {}});
-    this.session.plan[0] = {...this.session.plan[0], state: 'completed'};
-  }
-
   private async executeTool(call: ToolCall): Promise<void> {
     status(`tool ${call.name}`);
     const context: ToolContext = {workspace: this.workspace, permission: this.config.permission, log: (message) => process.stdout.write(message.endsWith('\n') ? message : `${message}\n`), askPermission};
     const result = await this.registry.execute(call.name, call.arguments, context);
     this.session.toolLog.push({at: new Date().toISOString(), name: call.name, input: call.arguments, output: result.output, ok: result.ok});
     this.session.messages.push({role: 'tool', toolCallId: call.id, content: result.output.slice(0, 12000)});
+    if (result.ok && this.config.showToolSummary) panel('Tool', `${call.name}: ${result.output.slice(0, 500)}`);
     if (!result.ok) panel('Tool Failed', `${call.name}: ${result.output}`);
+  }
+
+  private showEmptyResponseHelp(): void {
+    panel('No Assistant Response', [
+      `No assistant response received from ${this.providerName()}.`,
+      'Try:',
+      '- switching model',
+      '- running /doctor',
+      '- checking API credits',
+      '- checking provider status'
+    ].join('\n'));
   }
 
   private markPlanComplete(): void {
     this.session.plan = this.session.plan.map((item) => item.state === 'pending' || item.state === 'in_progress' ? {...item, state: 'completed'} : item);
   }
+}
+
+function shouldEnableTools(request: string): boolean {
+  return /\b(file|files|repo|repository|workspace|code|edit|fix|refactor|run|command|shell|test|build|lint|typecheck|git|diff|commit|read|search|find|create|write|delete|install)\b/i.test(request);
 }
