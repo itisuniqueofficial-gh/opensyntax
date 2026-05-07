@@ -1,3 +1,32 @@
+## [0.6.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.4...v0.6.0) (2026-05-07)
+
+### Features
+
+* support AGENTS workspace instructions ([d4f9723](https://github.com/itisuniqueofficial-gh/opensyntax/commit/d4f97235cda9667d57700fbc08bcb83459805082))
+
+
+# OpenSyntax v0.6.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: support AGENTS workspace instructions
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.5.4](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.3...v0.5.4) (2026-05-07)
 
 ### Bug Fixes
