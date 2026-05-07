@@ -1,3 +1,32 @@
+## [0.9.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.2...v0.9.0) (2026-05-07)
+
+### Features
+
+* connected-provider-only model/provider selection with cache and runtime validation ([b7d7078](https://github.com/itisuniqueofficial-gh/opensyntax/commit/b7d70789648dfe72d0850f5ec0c8a9d8e8e60b33))
+
+
+# OpenSyntax v0.9.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: connected-provider-only model/provider selection with cache and runtime validation
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.8.2](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.1...v0.8.2) (2026-05-07)
 
 ### Bug Fixes
