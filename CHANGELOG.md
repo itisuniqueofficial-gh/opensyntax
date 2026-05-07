@@ -1,3 +1,32 @@
+## [0.4.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.4.0...v0.4.1) (2026-05-07)
+
+### Bug Fixes
+
+* use active provider for chat runtime ([f1780f4](https://github.com/itisuniqueofficial-gh/opensyntax/commit/f1780f411b09bd2868bb892917eba92aee9e3d55))
+
+
+# OpenSyntax v0.4.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: use active provider for chat runtime
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.4.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.3.1...v0.4.0) (2026-05-07)
 
 ### Features
