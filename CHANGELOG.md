@@ -1,3 +1,32 @@
+## [0.17.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.16.0...v0.17.0) (2026-05-07)
+
+### Features
+
+* polish autonomous agent UX ([ff10910](https://github.com/itisuniqueofficial-gh/opensyntax/commit/ff109102315c8221aeebd61a9981c52b0aa9242a))
+
+
+# OpenSyntax v0.17.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: polish autonomous agent UX
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.16.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.15.0...v0.16.0) (2026-05-07)
 
 ### Features
