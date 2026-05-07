@@ -1,3 +1,32 @@
+## [0.7.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.6.0...v0.7.0) (2026-05-07)
+
+### Features
+
+* add workspace intelligence commands ([4df5482](https://github.com/itisuniqueofficial-gh/opensyntax/commit/4df548255d658898027ff3ad88fccca796645395))
+
+
+# OpenSyntax v0.7.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add workspace intelligence commands
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.6.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.4...v0.6.0) (2026-05-07)
 
 ### Features
