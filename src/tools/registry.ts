@@ -1,6 +1,7 @@
 import {z} from 'zod';
 import {writeFileTool} from './filesystem.js';
 import {filesystemTools} from './filesystem.js';
+import {folderTools} from './folder.js';
 import {searchTools} from './search.js';
 import {executeCommandTool} from './shell.js';
 import {gitTools} from './git.js';
@@ -37,5 +38,5 @@ export const askPermissionTool = tool({
   }
 });
 
-export const defaultRegistry = new ToolRegistry([...filesystemTools, ...searchTools, executeCommandTool, ...gitTools, diffPreviewTool, askPermissionTool]);
+export const defaultRegistry = new ToolRegistry([...filesystemTools, ...folderTools, ...searchTools, executeCommandTool, ...gitTools, diffPreviewTool, askPermissionTool]);
 export {writeFileTool};

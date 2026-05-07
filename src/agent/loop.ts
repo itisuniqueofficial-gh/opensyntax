@@ -12,6 +12,9 @@ import {initialPlan} from './planner.js';
 import {createModelProvider} from './orchestrator.js';
 import {systemPrompt} from './prompts.js';
 import {assistantChunk, panel, status} from '../ui/renderer.js';
+import {showThinkingStep, showToolDecision, showReasoningSummary} from '../ui/thinking.js';
+import {modelUnavailableMessage, fallbackModel} from '../model/capabilities.js';
+import {modelsForProvider} from '../model/registry.js';
 
 export class AgentLoop {
   private config: AppConfig;
@@ -43,11 +46,15 @@ export class AgentLoop {
     if (this.session.plan.length === 0) this.session.plan = initialPlan(request);
     this.session.messages.push({role: 'user', content: request});
 
+    // Show thinking progress
+    showThinkingStep('understanding');
+
     for (let step = 0; step < (this.autoMode ? 20 : 12); step++) {
       const provider = createModelProvider(this.config);
       const toolCalls: ToolCall[] = [];
       let assistantText = '';
       status(`thinking with ${this.modelName()}`);
+      showThinkingStep(step === 0 ? 'planning' : 'executing');
       try {
         for await (const event of provider.stream({
           messages: this.session.messages,
@@ -60,7 +67,18 @@ export class AgentLoop {
           if (event.type === 'tool_call') toolCalls.push(event.call);
         }
       } catch (error) {
-        panel('Model Error', errorMessage(error));
+        const message = errorMessage(error);
+        // Model unavailable — try fallback if enabled
+        if (this.config.modelFallback && isModelUnavailableError(message)) {
+          const available = modelsForProvider(this.config.provider).map((m) => m.id);
+          const fb = fallbackModel(this.config.provider, this.config.model, available);
+          if (fb) {
+            panel('Model Fallback', modelUnavailableMessage(this.config.provider, this.config.model, available));
+            this.config = {...this.config, model: fb.id};
+            continue;
+          }
+        }
+        panel('Model Error', message);
         break;
       }
 
@@ -71,9 +89,15 @@ export class AgentLoop {
         break;
       }
 
-      for (const call of toolCalls) await this.executeTool(call);
+      showThinkingStep('selecting-tools');
+      for (const call of toolCalls) {
+        showToolDecision(call.name);
+        await this.executeTool(call);
+      }
+      showThinkingStep('verifying');
       await saveSession(this.session);
     }
+    showThinkingStep('summarizing');
     this.markPlanComplete();
     await saveSession(this.session);
   }
@@ -106,4 +130,8 @@ export class AgentLoop {
 
 function shouldEnableTools(request: string): boolean {
   return /\b(file|files|repo|repository|workspace|code|edit|fix|refactor|run|command|shell|test|build|lint|typecheck|git|diff|commit|read|search|find|create|write|delete|install)\b/i.test(request);
+}
+
+function isModelUnavailableError(message: string): boolean {
+  return /model.*not.*found|model.*unavailable|does not exist|invalid model|no such model/i.test(message);
 }

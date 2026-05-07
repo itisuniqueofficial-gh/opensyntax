@@ -6,6 +6,11 @@ export {providerRegistry, getProvider, requireProvider} from './providers/regist
 export {loadProviders, saveProviders} from './auth/storage.js';
 export {findNearestInstructionFile, loadWorkspaceRules, loadWorkspaceRulesSafe, toIgnorePath} from './rules/loader.js';
 export {createStarterRules, openNearestRulesFile, renderRules, renderRulesDebug} from './rules/context.js';
+export {modelRegistry, modelsForProvider, findModel, capabilityBadges} from './model/registry.js';
+export {checkCapability, fallbackModel, modelUnavailableMessage} from './model/capabilities.js';
+export {checkPermission, requirePermission, canWrite, canShell} from './tools/permissions.js';
 export type {Tool, ToolContext, ToolResult, PermissionLevel} from './tools/types.js';
 export type {ChatMessage, ToolCall, ModelConfig} from './model/types.js';
 export type {RuleContext, RuleFile} from './rules/types.js';
+export type {ModelEntry, ModelCapabilities} from './model/registry.js';
+export type {ProviderDefinition, ProviderType} from './providers/registry.js';

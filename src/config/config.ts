@@ -14,7 +14,10 @@ const configSchema = z.object({
   temperature: z.number().min(0).max(2).default(defaultConfig.temperature),
   maxTokens: z.number().int().positive().default(defaultConfig.maxTokens),
   showToolSummary: z.boolean().default(false),
-  permission: z.enum(['read-only', 'workspace-write', 'shell-safe', 'full-access']).default(defaultConfig.permission)
+  permission: z.enum(['read-only', 'workspace-write', 'shell-safe', 'full-access']).default(defaultConfig.permission),
+  thinkingDisplay: z.boolean().default(true),
+  showReasoningSummary: z.boolean().default(false),
+  modelFallback: z.boolean().default(true)
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

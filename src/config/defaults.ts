@@ -1,14 +1,22 @@
 import type {ModelConfig} from '../model/types.js';
 
-export const defaultConfig: ModelConfig & {permission: 'read-only' | 'workspace-write' | 'shell-safe' | 'full-access'} = {
+export const defaultConfig: ModelConfig & {
+  permission: 'read-only' | 'workspace-write' | 'shell-safe' | 'full-access';
+  thinkingDisplay: boolean;
+  showReasoningSummary: boolean;
+  modelFallback: boolean;
+} = {
   provider: 'openai',
-  model: 'gpt-4o-mini',
+  model: 'gpt-4.1-mini',
   apiKey: process.env.OPENSYNTAX_API_KEY ?? process.env.OPENAI_API_KEY,
   baseUrl: process.env.OPENSYNTAX_BASE_URL,
   temperature: Number(process.env.OPENSYNTAX_TEMPERATURE ?? 0.2),
   maxTokens: Number(process.env.OPENSYNTAX_MAX_TOKENS ?? 4096),
   showToolSummary: false,
-  permission: 'shell-safe'
+  permission: 'shell-safe',
+  thinkingDisplay: true,
+  showReasoningSummary: false,
+  modelFallback: true
 };
 
 export const defaultSystemPrompt = `You are OpenSyntax, a terminal AI coding agent.

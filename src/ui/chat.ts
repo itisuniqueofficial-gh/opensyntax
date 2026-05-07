@@ -6,6 +6,8 @@ import {panel} from './renderer.js';
 import {promptUser} from './prompts.js';
 import {logoutProviderPrompt, runProviderSetup, switchProviderPrompt} from './onboarding.js';
 import {showAuth, showModels, showProviders} from '../commands/providers.js';
+import {showModelsCommand, pickModelInteractive, listProviderSummary} from '../commands/models.js';
+import {renderSettings} from '../commands/settings.js';
 import {loadConfig} from '../config/config.js';
 import {resolveModelConfig} from '../auth/manager.js';
 import {header} from './renderer.js';
@@ -14,6 +16,7 @@ import {runDoctor} from '../doctor/doctor.js';
 import {architectureSummary, commitDraft, dependencySummary, diffSummary, findFiles, gitSummary, pluginSummary, prDraft, renderProgress, repoSummary, searchWorkspace, sessionMemory, symbolSummary} from '../commands/intelligence.js';
 import {createStarterRules, openNearestRulesFile, renderRules, renderRulesDebug} from '../rules/context.js';
 import {loadWorkspaceRulesSafe} from '../rules/loader.js';
+import {setThinkingEnabled, setReasoningSummaryEnabled, renderThinkingStatus} from './thinking.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -31,12 +34,36 @@ export async function runInteractive(loop: AgentLoop): Promise<void> {
 async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   const [command, ...rest] = input.slice(1).split(/\s+/);
   if (command === 'exit') return true;
-  if (command === 'help') panel('Commands', ['/help', '/clear', '/provider', '/providers', '/model [name]', '/models', '/tools', '/plan', '/tasks', '/todo', '/progress', '/repo', '/architecture', '/dependencies', '/symbols [query]', '/search <query>', '/find <query>', '/grep <query>', '/git', '/diff', '/commit', '/pr', '/auto', '/memory', '/history', '/plugins', '/settings', '/theme', '/auth', '/login', '/logout', '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init', '/exit'].join('\n'));
+  if (command === 'help') panel('Commands', [
+    '/help', '/clear', '/exit',
+    '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth',
+    '/model [name]', '/models [provider|all]', '/provider-list',
+    '/tools', '/plan', '/tasks', '/todo', '/progress',
+    '/repo', '/architecture', '/dependencies', '/symbols [query]',
+    '/search <query>', '/find <query>', '/grep <query>',
+    '/git', '/diff', '/commit', '/pr',
+    '/auto [on|off]', '/memory', '/history', '/session',
+    '/plugins', '/settings', '/theme',
+    '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init',
+    '/thinking [on|off]', '/reasoning',
+    '/undo'
+  ].join('\n'));
   else if (command === 'clear') process.stdout.write('\x1Bc');
   else if (command === 'provider') await refreshProvider(loop, await switchProviderPrompt());
   else if (command === 'providers') await showProviders();
-  else if (command === 'model') panel('Model', rest.length ? await loop.setModel(rest.join(' ')) : loop.modelName());
-  else if (command === 'models') await showModels();
+  else if (command === 'provider-list') panel('Providers', listProviderSummary());
+  else if (command === 'model') {
+    if (rest.length) {
+      panel('Model', await loop.setModel(rest.join(' ')));
+    } else {
+      // Interactive model picker for current provider
+      const config = await loadConfig();
+      const modelId = await pickModelInteractive(config.provider);
+      if (modelId) panel('Model', await loop.setModel(modelId));
+      else panel('Model', loop.modelName());
+    }
+  }
+  else if (command === 'models') await showModelsCommand(rest[0], rest[0] === 'all');
   else if (command === 'tools') panel('Tools', loop.toolNames().join('\n'));
   else if (command === 'plan') panel('Plan', renderPlan(loop.session.plan));
   else if (command === 'tasks' || command === 'todo') panel('Tasks', renderPlan(loop.session.plan) || 'No active tasks yet.');
@@ -55,13 +82,24 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'auto') panel('Autonomous Mode', loop.setAutoMode(rest[0] !== 'off'));
   else if (command === 'memory' || command === 'history') panel('Memory', sessionMemory(loop.session));
   else if (command === 'plugins') panel('Plugins', await pluginSummary(workspaceRoot()));
-  else if (command === 'settings') panel('Settings', 'Use `opensyntax settings` from your shell to open the interactive settings manager.');
+  else if (command === 'settings') panel('Settings', await renderSettings());
   else if (command === 'theme') panel('Theme', 'Terminal theme follows your shell. Rich theme controls are planned for the interactive UI layer.');
   else if (command === 'auth') await showAuth();
   else if (command === 'login') { if (await runProviderSetup(rest[0])) await refreshProvider(loop, rest[0]); }
   else if (command === 'logout') await logoutProviderPrompt(rest[0]);
   else if (command === 'doctor') panel('Doctor', await runDoctor());
   else if (command === 'rules') await handleRules(rest, loop);
+  else if (command === 'thinking') {
+    if (rest[0] === 'on') { setThinkingEnabled(true); panel('Thinking', 'Thinking display enabled.'); }
+    else if (rest[0] === 'off') { setThinkingEnabled(false); panel('Thinking', 'Thinking display disabled.'); }
+    else panel('Thinking', renderThinkingStatus());
+  }
+  else if (command === 'reasoning') {
+    const config = await loadConfig();
+    const next = !config.showReasoningSummary;
+    setReasoningSummaryEnabled(next);
+    panel('Reasoning', `Reasoning summary: ${next ? chalk.green('on') : chalk.red('off')}`);
+  }
   else if (command === 'undo') panel('Undo', 'No automatic destructive undo is run. Use /diff, then ask for a specific safe reversal.');
   else panel('Unknown command', `/${command}`);
   return false;

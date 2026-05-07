@@ -7,13 +7,16 @@ import {header, panel} from './ui/renderer.js';
 import {runInteractive} from './ui/chat.js';
 import {AgentLoop} from './agent/loop.js';
 import {logger} from './utils/logger.js';
-import {ensureOnboarded, logoutProviderPrompt, runProviderSetup, runSettings} from './ui/onboarding.js';
+import {ensureOnboarded, logoutProviderPrompt, runProviderSetup} from './ui/onboarding.js';
+import {runSettingsCommand} from './commands/settings.js';
 import {hasConfiguredProvider, resolveModelConfig} from './auth/manager.js';
 import {showAuth, showModels, showProviders} from './commands/providers.js';
+import {showModelsCommand} from './commands/models.js';
 import {runDoctor} from './doctor/doctor.js';
 import {loadWorkspaceRulesSafe} from './rules/loader.js';
 import {watchRules} from './rules/watcher.js';
 import {createStarterRules} from './rules/context.js';
+import {setThinkingEnabled, setReasoningSummaryEnabled} from './ui/thinking.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -47,12 +50,12 @@ program.command('providers')
 
 program.command('models')
   .description('List models for the default or selected provider')
-  .argument('[provider]', 'provider id')
-  .action(async (provider?: string) => { await showModels(provider); });
+  .argument('[provider]', 'provider id or "all"')
+  .action(async (provider?: string) => { await showModelsCommand(provider, provider === 'all'); });
 
 program.command('settings')
   .description('Open interactive settings manager')
-  .action(runSettings);
+  .action(runSettingsCommand);
 
 program.command('config')
   .description('Write local OpenSyntax config')
@@ -90,6 +93,9 @@ program.argument('[prompt...]', 'optional one-shot request')
     }
     const loaded = await loadConfig({model: options.model, provider: normalizeProvider(options.provider) as any, permission: options.permission as any});
     const config = await resolveModelConfig(loaded, options.provider);
+    // Apply thinking config from saved settings
+    setThinkingEnabled(loaded.thinkingDisplay ?? true);
+    setReasoningSummaryEnabled(loaded.showReasoningSummary ?? false);
     const session = await loadOrCreateSession(workspace, options.session);
     const rules = await loadRulesForCli(workspace, options.debug);
     const loop = new AgentLoop({workspace, config, session, rules});
@@ -115,8 +121,7 @@ async function loadRulesForCli(workspace: string, debug = false) {
 }
 
 function normalizeProvider(provider?: string): string | undefined {
-  if (!provider) return undefined;
-  if (['groq', 'together', 'nvidia', 'deepseek', 'mistral', 'ollama', 'lmstudio', 'azure-openai'].includes(provider)) return 'openai';
+  // All providers are now handled natively; no remapping needed
   return provider;
 }
 
