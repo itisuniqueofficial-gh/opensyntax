@@ -57,7 +57,7 @@
     "chalk": "^5.3.0",
     "cli-highlight": "^2.1.11",
     "commander": "^12.1.0",
-    "diff": "^7.0.0",
+    "diff": "^8.0.3",
     "execa": "^9.6.0",
     "fast-glob": "^3.3.3",
     "ignore": "^6.0.2",
