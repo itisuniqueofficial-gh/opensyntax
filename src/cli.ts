@@ -22,6 +22,7 @@ import {validateProviderModel} from './model/validation.js';
 import {applyAppConfig} from './ui/ui-config.js';
 import {renderTerminal} from './commands/terminal.js';
 import {renderPermissions} from './commands/permissions.js';
+import {runDemoMode} from './commands/demo.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -32,6 +33,7 @@ const program = new Command()
   .option('-p, --provider <provider>', 'openai, anthropic, gemini, openrouter, groq, together, nvidia, deepseek, mistral, ollama, lmstudio, or azure-openai')
   .option('--permission <level>', 'read-only, workspace-safe, workspace-write, shell-safe, full-os, or danger')
   .option('--session <id>', 'resume a specific session')
+  .option('--demo', 'start in safe demo mode without provider, file changes, or shell commands')
   .option('--debug', 'show debug details for optional subsystem failures');
 
 program.command('auth')
@@ -101,9 +103,10 @@ rulesCommand.command('init')
   .action(async () => { logger.success(`Created ${await createStarterRules(workspaceRoot())}`); });
 
 program.argument('[prompt...]', 'optional one-shot request')
-  .action(async (promptParts: string[], options: {model?: string; provider?: string; permission?: string; session?: string; debug?: boolean}) => {
+  .action(async (promptParts: string[], options: {model?: string; provider?: string; permission?: string; session?: string; debug?: boolean; demo?: boolean}) => {
     const workspace = workspaceRoot();
     const prompt = promptParts.join(' ').trim();
+    if (options.demo) { runDemoMode(); return; }
     if (!await hasConfiguredProvider()) {
       const connected = await ensureOnboarded();
       if (!connected && !prompt) return;

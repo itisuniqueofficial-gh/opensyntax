@@ -28,6 +28,7 @@ import {renderCommandRisk, renderEnv, renderOS, renderPath, renderShell, renderT
 import {renderPermissions} from '../commands/permissions.js';
 import {commandForScript, renderScripts} from '../commands/scripts.js';
 import {executeCommandTool} from '../tools/shell.js';
+import {renderHelp} from '../commands/help.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -45,29 +46,7 @@ export async function runInteractive(loop: AgentLoop): Promise<void> {
 async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   const [command, ...rest] = input.slice(1).split(/\s+/);
   if (command === 'exit') return true;
-  if (command === 'help') panel('Commands', [
-    '/help', '/clear', '/exit',
-    '/new                    — start a fresh chat',
-    '/sessions               — browse saved sessions',
-    '/resume [id]            — resume a previous session',
-    '/history                — show current session history',
-    '/delete-session <id>    — delete a session',
-    '/rename-session [title] — rename current session',
-    '/provider [id]', '/providers', '/login [provider]', '/logout [provider]', '/auth', '/auth debug', '/auth health',
-    '/model [name]', '/models', '/models all', '/models refresh', '/provider-list',
-    '/capabilities', '/debug provider',
-    '/tools', '/plan', '/tasks', '/todo', '/progress',
-    '/repo', '/architecture', '/dependencies', '/symbols [query]',
-    '/search <query>', '/find <query>', '/grep <query>',
-    '/git', '/diff', '/commit', '/pr',
-    '/auto [on|off]', '/memory', '/session',
-    '/plugins', '/settings', '/theme [dark|light|no-color]',
-    '/markdown [on|off]', '/highlight [on|off]', '/codebox [on|off]', '/linenos [on|off]',
-    '/terminal', '/os', '/shell', '/permissions [mode]', '/scripts', '/run <script>', '/command <cmd>', '/env', '/path',
-    '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init',
-    '/thinking [on|off]', '/reasoning',
-    '/undo'
-  ].join('\n'));
+  if (command === 'help') panel('Help', renderHelp(rest.join(' ')));
   else if (command === 'new') await cmdNew(loop);
   else if (command === 'sessions') await cmdSessions(loop);
   else if (command === 'resume') await cmdResume(loop, rest.join(' '));
@@ -114,6 +93,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'symbols' || command === 'symbol') panel('Symbols', await symbolSummary(workspaceRoot(), rest.join(' ')));
   else if (command === 'search' || command === 'grep') panel('Search', await searchWorkspace(workspaceRoot(), rest.join(' ')));
   else if (command === 'find') panel('Find Files', await findFiles(workspaceRoot(), rest.join(' ')));
+  else if (command === 'files') panel('Files', ['Useful file requests:', '- Read package.json', '- Create docs/guide.md', '- Rename src/old.ts to src/new.ts', '- Search for TODO', '', 'Commands:', '/find <name>', '/search <query>'].join('\n'));
   else if (command === 'session') await cmdSessions(loop);
   else if (command === 'git') panel('Git', await gitSummary(workspaceRoot()));
   else if (command === 'diff') panel('Diff', await diffSummary(workspaceRoot()));

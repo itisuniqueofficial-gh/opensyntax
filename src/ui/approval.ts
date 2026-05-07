@@ -3,10 +3,10 @@ import prompts from 'prompts';
 import type {PermissionRequest} from '../tools/types.js';
 
 export async function promptApproval(request: PermissionRequest): Promise<boolean> {
-  process.stdout.write(`\n${chalk.yellow('Permission Required')}\n`);
-  if (request.tool) process.stdout.write(`Tool: ${request.tool}\n`);
-  if (request.path) process.stdout.write(`Path: ${request.path}\n`);
-  process.stdout.write(`Reason: ${request.reason}\nRisk: ${request.risk}\n`);
+  process.stdout.write(`\n${chalk.yellow('OpenSyntax needs permission')}\n\n`);
+  if (request.action) process.stdout.write(`${chalk.bold('Action:')}\n${request.action}\n\n`);
+  if (request.path) process.stdout.write(`${chalk.bold('Path:')}\n${request.path}\n\n`);
+  process.stdout.write(`${chalk.bold('Reason:')}\n${request.reason}\n\n${chalk.bold('Risk:')} ${request.risk}\n`);
   if (request.confirmationText) {
     process.stdout.write(`\nType exactly:\n${request.confirmationText}\n`);
     const response = await prompts({type: 'text', name: 'value', message: 'Confirmation'});

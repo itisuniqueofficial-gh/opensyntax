@@ -24,18 +24,24 @@ export function printHeader(opts: {
   sessionTitle?: string;
 }): void {
   const w = Math.min(process.stdout.columns ?? 80, 100);
+  const narrow = w < 72;
   process.stdout.write('\n');
   process.stdout.write(chalk.bold.cyan('OpenSyntax') + chalk.gray(' AI Coding Agent') + '\n');
   process.stdout.write(hr('─', w) + '\n');
-  process.stdout.write(`${theme.ok} Model:      ${chalk.cyan(opts.model)}\n`);
-  process.stdout.write(`${theme.ok} Permission: ${chalk.green(opts.permission)}\n`);
-  process.stdout.write(`${theme.ok} Workspace:  ${chalk.gray(opts.workspace)}\n`);
-  process.stdout.write(`${theme.ok} Session:    ${chalk.gray(opts.sessionId)}\n`);
+  if (narrow) {
+    process.stdout.write(`${theme.ok} ${chalk.cyan(opts.model)} · ${chalk.green(opts.permission)}\n`);
+    process.stdout.write(`${theme.ok} ${chalk.gray(opts.sessionId)}\n`);
+  } else {
+    process.stdout.write(`${theme.ok} Model:      ${chalk.cyan(opts.model)}\n`);
+    process.stdout.write(`${theme.ok} Permission: ${chalk.green(opts.permission)}\n`);
+    process.stdout.write(`${theme.ok} Workspace:  ${chalk.gray(opts.workspace)}\n`);
+    process.stdout.write(`${theme.ok} Session:    ${chalk.gray(opts.sessionId)}\n`);
+  }
   if (opts.sessionTitle && opts.sessionTitle !== 'New Chat') {
     process.stdout.write(`${theme.ok} Title:      ${chalk.dim(opts.sessionTitle)}\n`);
   }
   process.stdout.write(hr('─', w) + '\n');
-  process.stdout.write(chalk.gray('Type /help for commands · /new for a fresh chat · /sessions to browse history\n\n'));
+  process.stdout.write(chalk.gray(narrow ? '/help · /new · /sessions\n\n' : 'Type /help for commands · /new for a fresh chat · /sessions to browse history\n\n'));
 }
 
 // ---------------------------------------------------------------------------
