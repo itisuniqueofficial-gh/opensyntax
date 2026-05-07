@@ -1,3 +1,32 @@
+## [0.13.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.12.1...v0.13.0) (2026-05-07)
+
+### Features
+
+* add advanced workspace file tools and permissions ([8f21895](https://github.com/itisuniqueofficial-gh/opensyntax/commit/8f2189530253a3bead2e0efb20e9c20e6464980f))
+
+
+# OpenSyntax v0.13.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add advanced workspace file tools and permissions
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.12.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.12.0...v0.12.1) (2026-05-07)
 
 ### Documentation
