@@ -1,3 +1,32 @@
+## [0.4.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.3.1...v0.4.0) (2026-05-07)
+
+### Features
+
+* add provider onboarding and auth management ([7a232c4](https://github.com/itisuniqueofficial-gh/opensyntax/commit/7a232c47b6430f9d6da7d8b7a544e8e23418736a))
+
+
+# OpenSyntax v0.4.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add provider onboarding and auth management
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.3.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.3.0...v0.3.1) (2026-05-07)
 
 ### Documentation
