@@ -18,6 +18,7 @@ export class AgentLoop {
   private readonly workspace: string;
   private readonly registry: ToolRegistry;
   private rules: RuleContext;
+  private autoMode = false;
   readonly session: SessionRecord;
 
   constructor(options: {workspace: string; config: AppConfig; session: SessionRecord; registry?: ToolRegistry; rules?: RuleContext}) {
@@ -36,12 +37,13 @@ export class AgentLoop {
   updateConfig(config: AppConfig) { this.config = config; }
   updateRules(rules: RuleContext) { this.rules = rules; }
   rulesContext() { return this.rules; }
+  setAutoMode(enabled: boolean) { this.autoMode = enabled; return enabled ? 'Autonomous mode enabled. I will continue tool-assisted workflows until completion while still asking approval for risky actions.' : 'Autonomous mode disabled.'; }
 
   async run(request: string): Promise<void> {
     if (this.session.plan.length === 0) this.session.plan = initialPlan(request);
     this.session.messages.push({role: 'user', content: request});
 
-    for (let step = 0; step < 12; step++) {
+    for (let step = 0; step < (this.autoMode ? 20 : 12); step++) {
       const provider = createModelProvider(this.config);
       const toolCalls: ToolCall[] = [];
       let assistantText = '';
@@ -50,7 +52,7 @@ export class AgentLoop {
         for await (const event of provider.stream({
           messages: this.session.messages,
           tools: shouldEnableTools(request) ? this.registry.specs() : [],
-          systemPrompt: systemPrompt(this.workspace, this.session.plan, this.rules),
+          systemPrompt: systemPrompt(this.workspace, this.session.plan, this.rules, this.autoMode),
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens
         })) {

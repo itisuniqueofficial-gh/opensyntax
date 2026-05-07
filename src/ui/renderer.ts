@@ -2,8 +2,11 @@ import chalk from 'chalk';
 import {renderMarkdown} from './markdown.js';
 
 export function header(workspace: string, model: string, permission: string): void {
-  process.stdout.write(`${chalk.bold('OpenSyntax')} ${chalk.gray('|')} ${chalk.cyan(model)} ${chalk.gray('|')} ${chalk.green(permission)} ${chalk.gray('|')} ${workspace}\n`);
-  process.stdout.write(chalk.gray('Type /help for commands, /providers to switch auth, Ctrl+C or /exit to quit.\n\n'));
+  process.stdout.write(`${chalk.bold('OpenSyntax')} ${chalk.gray('AI Coding Agent')}\n`);
+  process.stdout.write(`${chalk.green('✓')} Model: ${chalk.cyan(model)}\n`);
+  process.stdout.write(`${chalk.green('✓')} Shell: ${chalk.green(permission)}\n`);
+  process.stdout.write(`${chalk.green('✓')} Workspace: ${workspace}\n`);
+  process.stdout.write(chalk.gray('Ready. Type /help for commands, /repo for workspace intelligence, /auto for autonomous mode, Ctrl+C or /exit to quit.\n\n'));
 }
 
 export function assistantChunk(text: string): void {

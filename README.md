@@ -230,6 +230,30 @@ Rules affect planning, prompt context, filesystem edits, and shell commands. For
 
 Core safety protections always override workspace instructions. Workspace rules cannot bypass permission prompts, destructive command protection, secret masking, workspace boundary checks, or the user's latest explicit instruction. Use `.opensyntaxignore` or `.gitignore` to ignore directories such as `dist`, `build`, `.next`, or generated workspaces during rule discovery.
 
+## Workspace Intelligence And Autonomy
+
+OpenSyntax includes read-only repository intelligence commands that help the agent inspect a project without wasting model tokens on full-file dumps:
+
+```txt
+/repo              Summarize package metadata, file types, folders, and git state
+/architecture      Show a compact architecture map
+/dependencies      Show scripts, dependencies, and dev dependencies
+/symbols [query]   Search TypeScript/JavaScript symbols
+/search <query>    Search workspace content
+/find <query>      Fuzzy file-name search
+/git               Show branch, status, and recent commits
+/diff              Summarize staged and unstaged diffs
+/commit            Draft a commit message from current changes
+/pr                Draft a pull request outline
+/tasks             Show the active task plan
+/progress          Show completion progress
+/auto              Enable autonomous continuation for safe tool-assisted workflows
+/memory            Show session memory summary
+/plugins           Show built-in tools and workspace plugin manifests
+```
+
+Autonomous mode does not bypass safety. Risky shell commands, destructive git operations, external path access, and secret exposure protections still require approval or remain blocked.
+
 ### Config Command
 
 ```bash
