@@ -1,3 +1,33 @@
+## [0.14.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.13.0...v0.14.0) (2026-05-07)
+
+### Features
+
+* add advanced terminal command access and permissions ([6210a04](https://github.com/itisuniqueofficial-gh/opensyntax/commit/6210a04daa1570370f99a6d321761e8d1c092390))
+
+
+# OpenSyntax v0.14.0
+
+## Summary
+This release includes 2 validated changes for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- Merge pull request #3 from itisuniqueofficial-gh/feat/advanced-terminal-permissions
+- feat: add advanced terminal command access and permissions
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.13.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.12.1...v0.13.0) (2026-05-07)
 
 ### Features
