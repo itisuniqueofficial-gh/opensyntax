@@ -1,3 +1,32 @@
+## [0.5.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.4.3...v0.5.0) (2026-05-07)
+
+### Features
+
+* add workspace instruction rules ([49e9fac](https://github.com/itisuniqueofficial-gh/opensyntax/commit/49e9fac4d3ecb04e3aa1e09c5307f8a01596b055))
+
+
+# OpenSyntax v0.5.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add workspace instruction rules
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.4.3](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.4.2...v0.4.3) (2026-05-07)
 
 ### Continuous Integration
