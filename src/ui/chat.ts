@@ -23,6 +23,7 @@ import {cmdNew, cmdSessions, cmdResume, cmdHistory, cmdDeleteSession, cmdRenameS
 import {printHeader} from './layout.js';
 import {handleMarkdownCommand, handleHighlightCommand, handleCodeboxCommand, handleLinenosCommand} from '../commands/markdown.js';
 import {handleThemeCommand} from '../commands/theme.js';
+import {runAuthDebug, runAuthHealthCheck} from '../commands/auth-debug.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -48,7 +49,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/history                — show current session history',
     '/delete-session <id>    — delete a session',
     '/rename-session [title] — rename current session',
-    '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth',
+    '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth', '/auth debug', '/auth health',
     '/model [name]', '/models', '/models all', '/models refresh', '/provider-list',
     '/capabilities', '/debug provider',
     '/tools', '/plan', '/tasks', '/todo', '/progress',
@@ -123,7 +124,11 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'highlight') await handleHighlightCommand(rest[0] ?? 'on');
   else if (command === 'codebox') await handleCodeboxCommand(rest[0] ?? 'on');
   else if (command === 'linenos') await handleLinenosCommand(rest[0] ?? 'on');
-  else if (command === 'auth') await showAuth();
+  else if (command === 'auth') {
+    if (rest[0] === 'debug') await runAuthDebug();
+    else if (rest[0] === 'health') await runAuthHealthCheck();
+    else await showAuth();
+  }
   else if (command === 'login') { if (await runProviderSetup(rest[0])) await refreshProvider(loop, rest[0]); }
   else if (command === 'logout') await logoutProviderPrompt(rest[0]);
   else if (command === 'doctor') panel('Doctor', await runDoctor());

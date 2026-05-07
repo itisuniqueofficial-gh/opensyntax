@@ -346,6 +346,13 @@ opensyntax auth --provider lmstudio
 
 Provider credentials are stored in `~/.opensyntax/providers.json`. Secrets are encrypted locally using Node.js crypto and are never printed in full. Environment variables remain supported as a fallback for CI and ephemeral environments.
 
+Supported login methods are provider-specific:
+
+- API key login for OpenAI, Anthropic, Gemini, OpenRouter, NVIDIA NIM, Groq, DeepSeek, Mistral, Together AI, and Azure OpenAI.
+- Environment variable login for `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `NVIDIA_API_KEY`, `GROQ_API_KEY`, `DEEPSEEK_API_KEY`, `MISTRAL_API_KEY`, `TOGETHER_API_KEY`, and `AZURE_OPENAI_API_KEY`.
+- Local provider login for Ollama and LM Studio by checking the local HTTP servers and fetching models.
+- Browser OAuth and device-code helpers exist for providers that expose real public CLI OAuth/device endpoints. OpenSyntax does not show or claim these methods for providers that only support API keys.
+
 Authentication commands:
 
 ```bash
@@ -357,7 +364,7 @@ opensyntax models            # discover models for current provider
 opensyntax settings          # interactive settings manager
 ```
 
-Browser and device-code authentication hooks are built into the architecture. Providers that do not expose a public CLI OAuth/token exchange flow fall back to API key authentication with a clear message.
+Inside chat, use `/auth debug` to inspect provider auth state, credential source, cached models, validation status, and endpoint without exposing secrets.
 
 ## CLI Usage
 
