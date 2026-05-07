@@ -7,6 +7,8 @@
   const current = location.pathname.split('/').pop() || 'index.html';
   let activeLink = null;
 
+  ensureSponsorNavigation();
+
   document.querySelectorAll('.sidebar a').forEach((link) => {
     const href = link.getAttribute('href');
     if (href === current) {
@@ -107,5 +109,23 @@
     setTimeout(() => {
       if (!overlay.classList.contains('open')) overlay.hidden = true;
     }, 200);
+  }
+
+  function ensureSponsorNavigation() {
+    addLink(document.querySelector('[data-topnav]'), 'Sponsors', 'sponsors.html', 'GitHub');
+    addLink(document.querySelector('[data-sidebar]'), 'Sponsors', 'sponsors.html');
+    document.querySelectorAll('.footer-links').forEach((footer) => addLink(footer, 'Sponsors', 'sponsors.html'));
+  }
+
+  function addLink(container, label, href, beforeLabel) {
+    if (!container || container.querySelector(`a[href="${href}"]`)) return;
+    const link = document.createElement('a');
+    link.href = href;
+    link.textContent = label;
+    if (beforeLabel) {
+      const before = Array.from(container.querySelectorAll('a')).find((item) => item.textContent?.trim() === beforeLabel);
+      if (before) { container.insertBefore(link, before); return; }
+    }
+    container.appendChild(link);
   }
 })();

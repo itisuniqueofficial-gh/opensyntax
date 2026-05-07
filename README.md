@@ -715,6 +715,14 @@ Good issues include:
 
 Security-sensitive reports should avoid public issue details. Open a minimal issue requesting private coordination.
 
+## Sponsors
+
+OpenSyntax is supported by people and organizations who believe in open-source developer tooling.
+
+See current and previous sponsors:
+
+https://os.itisuniqueofficial.com/sponsors.html
+
 ## License
 
 OpenSyntax is released under the [MIT License](LICENSE).
@@ -723,6 +731,7 @@ OpenSyntax is released under the [MIT License](LICENSE).
 
 - Website: https://itisuniqueofficial.com/
 - OpenSyntax docs: https://os.itisuniqueofficial.com/
+- Sponsors: https://os.itisuniqueofficial.com/sponsors.html
 - GitHub: https://github.com/itisuniqueofficial-gh/opensyntax
 - npm: https://www.npmjs.com/package/opensyntax
 

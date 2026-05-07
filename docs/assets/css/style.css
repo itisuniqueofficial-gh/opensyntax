@@ -157,6 +157,19 @@ p { margin: 0 0 16px; }
 .provider { border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; background: var(--soft); }
 .provider strong { display: block; margin-bottom: 4px; }
 
+.sponsor-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 18px 0 28px; }
+.sponsor-card, .tier-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; background: var(--bg); }
+.sponsor-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.sponsor-card h3, .tier-card h3 { margin: 0 0 6px; }
+.sponsor-card span { display: inline-flex; color: var(--muted); font-size: 13px; font-weight: 700; }
+.sponsor-logo, .sponsor-logo-fallback { width: 48px; height: 48px; border-radius: 12px; flex: 0 0 auto; }
+.sponsor-logo { object-fit: cover; border: 1px solid var(--border); }
+.sponsor-logo-fallback { display: grid; place-items: center; background: var(--soft-2); color: var(--text); border: 1px solid var(--border); font-weight: 800; }
+.sponsor-empty { background: var(--soft); grid-column: 1 / -1; }
+.tier-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 18px 0 28px; }
+.faq-list article { border-top: 1px solid var(--border); padding: 16px 0; }
+.faq-list h3 { margin-top: 0; }
+
 .callout { border-left: 4px solid var(--accent); background: var(--soft); padding: 16px 18px; border-radius: 0 var(--radius) var(--radius) 0; margin: 18px 0; }
 .callout.warning { border-left-color: #d97706; }
 
@@ -205,8 +218,13 @@ th { background: var(--soft); }
   .drawer-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: var(--nav-height); margin: 0 -16px 8px; padding: 0 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
   .drawer-header strong { font-size: 14px; }
   .sidebar-title { margin-top: 14px; }
-  .grid, .grid.two, .provider-list { grid-template-columns: 1fr; }
+  .grid, .grid.two, .provider-list, .sponsor-grid, .tier-grid { grid-template-columns: 1fr; }
   .hero { padding: 34px 0 24px; }
+}
+
+@media (min-width: 700px) and (max-width: 1023px) {
+  .sponsor-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 560px) {
