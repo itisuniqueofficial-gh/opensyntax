@@ -1,3 +1,32 @@
+## [0.5.2](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.1...v0.5.2) (2026-05-07)
+
+### Bug Fixes
+
+* improve docs mobile navigation ([586807f](https://github.com/itisuniqueofficial-gh/opensyntax/commit/586807f972f98796478b6da1176c62cdef4c6f8a))
+
+
+# OpenSyntax v0.5.2
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: improve docs mobile navigation
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.5.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.0...v0.5.1) (2026-05-07)
 
 ### Continuous Integration
