@@ -1,3 +1,32 @@
+## [0.16.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.15.0...v0.16.0) (2026-05-07)
+
+### Features
+
+* add autonomous verification workflow engine ([997d625](https://github.com/itisuniqueofficial-gh/opensyntax/commit/997d625f82c2cd775c5c057412f68fac573533f7))
+
+
+# OpenSyntax v0.16.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add autonomous verification workflow engine
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.15.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.14.0...v0.15.0) (2026-05-07)
 
 ### Features
