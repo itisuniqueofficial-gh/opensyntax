@@ -1,17 +1,43 @@
 {
   "branches": ["main"],
+  "tagFormat": "v${version}",
   "repositoryUrl": "https://github.com/itisuniqueofficial-gh/opensyntax.git",
   "plugins": [
     [
       "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits"
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          {"breaking": true, "release": "major"},
+          {"type": "feat", "release": "minor"},
+          {"type": "*", "release": "patch"}
+        ]
       }
     ],
     [
       "@semantic-release/release-notes-generator",
       {
-        "preset": "conventionalcommits"
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            {"type": "feat", "section": "Features"},
+            {"type": "fix", "section": "Bug Fixes"},
+            {"type": "perf", "section": "Performance"},
+            {"type": "refactor", "section": "Refactoring"},
+            {"type": "docs", "section": "Documentation"},
+            {"type": "test", "section": "Tests"},
+            {"type": "build", "section": "Build System"},
+            {"type": "ci", "section": "Continuous Integration"},
+            {"type": "chore", "section": "Maintenance"}
+          ]
+        }
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "verifyReleaseCmd": "node scripts/ensure-unpublished.mjs \"${nextRelease.version}\"",
+        "generateNotesCmd": "node scripts/release-notes.mjs \"${nextRelease.version}\" \"${lastRelease.gitHead || ''}\""
       }
     ],
     [
@@ -23,15 +49,23 @@
     [
       "@semantic-release/npm",
       {
-        "npmPublish": true
+        "npmPublish": true,
+        "tarballDir": "release-artifacts"
       }
     ],
-    "@semantic-release/github",
     [
       "@semantic-release/git",
       {
         "assets": ["CHANGELOG.md", "package.json", "package-lock.json"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          {"path": "release-artifacts/*.tgz", "label": "npm package tarball"}
+        ]
       }
     ]
   ]

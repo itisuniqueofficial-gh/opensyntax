@@ -174,6 +174,36 @@ npm test
 npm run build
 ```
 
+## Automatic Releases
+
+OpenSyntax uses GitHub Actions and semantic-release to publish production releases from `main`.
+
+Required repository secrets:
+
+- `NPMJS_TOKEN`: npm automation token with publish access for the `opensyntax` package.
+- `GITACCESS_TOKEN`: GitHub token with permission to push release commits/tags and create GitHub Releases.
+
+On every push to `main`, `.github/workflows/release.yml` performs the release pipeline:
+
+1. Checks out the full git history and tags.
+2. Installs dependencies with `npm ci`, falling back to `npm install` only if needed.
+3. Runs `npm run lint --if-present`.
+4. Runs `npm run typecheck --if-present`.
+5. Runs `npm test --if-present`.
+6. Runs `npm run build --if-present`.
+7. Verifies the package with `npm pack --dry-run`.
+8. Runs `semantic-release` to bump versions, publish to npm, create/update tags, update `CHANGELOG.md`, and create a GitHub Release.
+
+Version bump rules:
+
+- `BREAKING CHANGE` or conventional commit `!` triggers a major release.
+- `feat:` triggers a minor release.
+- Any other commit type defaults to a patch release.
+
+Release commits use `chore(release): X.Y.Z [skip ci]` to prevent infinite release loops. Published releases include generated notes, install and upgrade commands, npm and GitHub links, and an npm tarball attachment when available.
+
+Manual releases can be started from GitHub by opening Actions, selecting `Release`, and choosing `Run workflow` on `main`.
+
 ## Example Screen
 
 ```txt
