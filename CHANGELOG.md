@@ -1,3 +1,37 @@
+## [0.15.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.14.0...v0.15.0) (2026-05-07)
+
+### Features
+
+* improve first-run UX and command discoverability ([db63d89](https://github.com/itisuniqueofficial-gh/opensyntax/commit/db63d89e87d069ade17a1ee03a39a307ec4ec6f3))
+
+### Bug Fixes
+
+* make provider and model switching consistent ([48cb2fa](https://github.com/itisuniqueofficial-gh/opensyntax/commit/48cb2fa0872c3a373170ea850e9ac42a32d1bfa6))
+
+
+# OpenSyntax v0.15.0
+
+## Summary
+This release includes 2 validated changes for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: improve first-run UX and command discoverability
+- fix: make provider and model switching consistent
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.14.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.13.0...v0.14.0) (2026-05-07)
 
 ### Features
