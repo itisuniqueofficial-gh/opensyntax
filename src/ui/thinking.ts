@@ -14,19 +14,25 @@ export type ThinkingStep =
   | 'understanding'
   | 'checking-workspace'
   | 'planning'
+  | 'preparing-request'
+  | 'sending-request'
   | 'selecting-tools'
   | 'executing'
   | 'verifying'
-  | 'summarizing';
+  | 'summarizing'
+  | 'request-failed';
 
 const STEP_LABELS: Record<ThinkingStep, string> = {
   'understanding': 'Understanding request',
   'checking-workspace': 'Checking workspace',
   'planning': 'Planning changes',
+  'preparing-request': 'Preparing provider request',
+  'sending-request': 'Sending request',
   'selecting-tools': 'Selecting tools',
   'executing': 'Executing',
   'verifying': 'Verifying result',
-  'summarizing': 'Summarizing'
+  'summarizing': 'Summarizing',
+  'request-failed': 'Request failed before inference'
 };
 
 export type ThinkingConfig = {

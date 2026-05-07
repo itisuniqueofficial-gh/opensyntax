@@ -8,6 +8,8 @@ import {logoutProviderPrompt, runProviderSetup, switchProviderPrompt} from './on
 import {showAuth, showModels, showProviders} from '../commands/providers.js';
 import {showModelsCommand, pickModelInteractive, listProviderSummary} from '../commands/models.js';
 import {renderSettings} from '../commands/settings.js';
+import {showCapabilities} from '../commands/capabilities.js';
+import {showDebugPayload} from '../commands/debug.js';
 import {loadConfig} from '../config/config.js';
 import {resolveModelConfig} from '../auth/manager.js';
 import {header} from './renderer.js';
@@ -38,6 +40,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/help', '/clear', '/exit',
     '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth',
     '/model [name]', '/models [provider|all]', '/provider-list',
+    '/capabilities', '/debug provider',
     '/tools', '/plan', '/tasks', '/todo', '/progress',
     '/repo', '/architecture', '/dependencies', '/symbols [query]',
     '/search <query>', '/find <query>', '/grep <query>',
@@ -64,6 +67,18 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     }
   }
   else if (command === 'models') await showModelsCommand(rest[0], rest[0] === 'all');
+  else if (command === 'capabilities') {
+    const config = await loadConfig();
+    await showCapabilities(config.provider, config.model);
+  }
+  else if (command === 'debug') {
+    if (rest[0] === 'provider') {
+      const config = await loadConfig();
+      showDebugPayload(config, loop.toolSpecs());
+    } else {
+      panel('Debug', 'Usage: /debug provider');
+    }
+  }
   else if (command === 'tools') panel('Tools', loop.toolNames().join('\n'));
   else if (command === 'plan') panel('Plan', renderPlan(loop.session.plan));
   else if (command === 'tasks' || command === 'todo') panel('Tasks', renderPlan(loop.session.plan) || 'No active tasks yet.');

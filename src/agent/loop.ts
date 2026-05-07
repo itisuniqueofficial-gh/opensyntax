@@ -15,7 +15,6 @@ import {assistantChunk, panel, status} from '../ui/renderer.js';
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
 import {modelUnavailableMessage, fallbackModel} from '../model/capabilities.js';
 import {modelsForProvider} from '../model/registry.js';
-import {ProviderError} from '../model/provider.js';
 
 export class AgentLoop {
   private config: AppConfig;
@@ -37,6 +36,7 @@ export class AgentLoop {
   providerName() { return this.config.providerName ?? this.config.provider; }
   baseUrl() { return this.config.baseUrl; }
   toolNames() { return this.registry.names(); }
+  toolSpecs() { return this.registry.specs(); }
   async setModel(model: string) { this.config = {...this.config, model}; return `Model set to ${model}`; }
   updateConfig(config: AppConfig) { this.config = config; }
   updateRules(rules: RuleContext) { this.rules = rules; }
@@ -55,8 +55,9 @@ export class AgentLoop {
       const toolCalls: ToolCall[] = [];
       let assistantText = '';
       status(`thinking with ${this.modelName()}`);
-      showThinkingStep(step === 0 ? 'planning' : 'executing');
+      showThinkingStep(step === 0 ? 'preparing-request' : 'executing');
       try {
+        showThinkingStep('sending-request');
         for await (const event of provider.stream({
           messages: this.session.messages,
           tools: shouldEnableTools(request) ? this.registry.specs() : [],
@@ -69,6 +70,7 @@ export class AgentLoop {
         }
       } catch (error) {
         const message = errorMessage(error);
+        showThinkingStep('request-failed');
         // Model unavailable — try fallback if enabled
         if (this.config.modelFallback && isModelUnavailableError(message)) {
           const available = modelsForProvider(this.config.provider).map((m) => m.id);
@@ -79,9 +81,8 @@ export class AgentLoop {
             continue;
           }
         }
-        // Show full error body for provider errors so users can diagnose 400s
-        const detail = error instanceof ProviderError && error.body ? `\n\n${error.body.slice(0, 500)}` : '';
-        panel('Model Error', `${message}${detail}`);
+        // The error message is already human-readable (built by the provider)
+        panel('Model Error', message);
         break;
       }
 
