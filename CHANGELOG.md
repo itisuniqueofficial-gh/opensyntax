@@ -1,3 +1,32 @@
+## [0.4.3](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.4.2...v0.4.3) (2026-05-07)
+
+### Continuous Integration
+
+* enable GitHub Pages deployment ([5ac80bf](https://github.com/itisuniqueofficial-gh/opensyntax/commit/5ac80bf3d8becaf90a7cbf73f2f750c5434305af))
+
+
+# OpenSyntax v0.4.3
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- ci: enable GitHub Pages deployment
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.4.2](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.4.1...v0.4.2) (2026-05-07)
 
 ### Documentation
