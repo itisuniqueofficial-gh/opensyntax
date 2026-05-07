@@ -31,6 +31,7 @@ function enforceRuleShellRestrictions(command: string, rules: string[]): void {
   const lower = command.toLowerCase();
   const text = rules.join('\n').toLowerCase();
   if (/never use npm|use bun only|bun only|prefer bun/.test(text) && /\bnpm\b/.test(lower)) throw new Error('Workspace rules prohibit npm commands; use bun instead.');
+  if (/do not use npm|don't use npm/.test(text) && /\bnpm\b/.test(lower)) throw new Error('Workspace rules prohibit npm commands.');
   if (/never use pnpm|do not use pnpm/.test(text) && /\bpnpm\b/.test(lower)) throw new Error('Workspace rules prohibit pnpm commands.');
   if (/never use yarn|do not use yarn/.test(text) && /\byarn\b/.test(lower)) throw new Error('Workspace rules prohibit yarn commands.');
   if (/never run docker|do not run docker|no docker/.test(text) && /\bdocker\b/.test(lower)) throw new Error('Workspace rules prohibit docker commands.');

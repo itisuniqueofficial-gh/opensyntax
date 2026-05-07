@@ -8,7 +8,7 @@ import {mergeRules} from './merger.js';
 import {getCachedRules, setCachedRules} from './cache.js';
 import {emptyRuleContext, type RuleContext, type RuleFile} from './types.js';
 
-const RULE_NAMES = ['OPENSYNTAX.md', path.join('.opensyntax', 'OPENSYNTAX.md')];
+const RULE_NAMES = ['OPENSYNTAX.md', 'AGENTS.md', path.join('.opensyntax', 'OPENSYNTAX.md'), path.join('.opensyntax', 'AGENTS.md')];
 
 export async function loadWorkspaceRules(cwd = process.cwd()): Promise<RuleContext> {
   const candidates = await findRuleCandidates(cwd);
@@ -43,9 +43,14 @@ export async function findRuleCandidates(cwd: string): Promise<Array<{path: stri
   for (let index = 0; index < dirs.length; index++) {
     const dir = dirs[index];
     if (ignores.ignores(dir)) continue;
-    for (const name of RULE_NAMES) await pushIfExists(candidates, path.join(dir, name), 'workspace', 10 + index);
+    for (let priority = 0; priority < RULE_NAMES.length; priority++) await pushIfExists(candidates, path.join(dir, RULE_NAMES[priority]), 'workspace', 10 + index * 10 + priority);
   }
   return uniqueByPath(candidates).sort((a, b) => a.depth - b.depth);
+}
+
+export async function findNearestInstructionFile(cwd = process.cwd()): Promise<string | undefined> {
+  const candidates = (await findRuleCandidates(cwd)).filter((candidate) => candidate.scope === 'workspace');
+  return candidates.sort((a, b) => b.depth - a.depth)[0]?.path;
 }
 
 async function pushIfExists(target: Array<{path: string; scope: 'global' | 'workspace'; depth: number; mtimeMs: number}>, file: string, scope: 'global' | 'workspace', depth: number): Promise<void> {
@@ -71,6 +76,7 @@ async function loadOpenSyntaxIgnore(cwd: string): Promise<{ignores(target: strin
   for (const dir of ancestorDirs(cwd)) {
     const ig = ignore().add(['node_modules', 'dist', 'build', 'coverage', '.next', '.cache']);
     try { ig.add(await readFile(path.join(dir, '.opensyntaxignore'), 'utf8')); } catch {}
+    try { ig.add(await readFile(path.join(dir, '.gitignore'), 'utf8')); } catch {}
     matchers.push({base: dir, ignores: (target) => ig.ignores(target)});
   }
   return {

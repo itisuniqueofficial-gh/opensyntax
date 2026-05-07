@@ -27,6 +27,8 @@ export type RuleContext = {
   restrictions: string[];
   shellRules: string[];
   testingRules: string[];
+  forbiddenPaths: string[];
+  ignoredFiles: string[];
   prompt: string;
   tokenEstimate: number;
   debug: string;
@@ -39,6 +41,8 @@ export const emptyRuleContext: RuleContext = {
   restrictions: [],
   shellRules: [],
   testingRules: [],
+  forbiddenPaths: [],
+  ignoredFiles: [],
   prompt: 'No OPENSYNTAX.md rules loaded.',
   tokenEstimate: 0,
   debug: 'No OPENSYNTAX.md files found.',

@@ -31,6 +31,7 @@ export const writeFileTool = tool({
   async execute(input, context) {
     requireWrite(context.permission);
     const file = resolveWorkspacePath(context.workspace, input.path);
+    enforceRulePathRestrictions(context.workspace, file, context.rules?.forbiddenPaths ?? context.rules?.restrictions ?? []);
     const previous = await readExisting(file);
     if (input.expectedHash && previous.exists && await fileHash(previous.content) !== input.expectedHash) throw new Error(`Concurrent modification detected for ${input.path}`);
     const diff = createPatch(input.path, previous.content, input.content, 'before', 'after');
@@ -52,6 +53,7 @@ export const patchFileTool = tool({
   async execute(input, context) {
     requireWrite(context.permission);
     const file = resolveWorkspacePath(context.workspace, input.path);
+    enforceRulePathRestrictions(context.workspace, file, context.rules?.forbiddenPaths ?? context.rules?.restrictions ?? []);
     const previous = await readFile(file, 'utf8');
     if (input.expectedHash && await fileHash(previous) !== input.expectedHash) throw new Error(`Concurrent modification detected for ${input.path}`);
     const first = previous.indexOf(input.search);
@@ -78,4 +80,21 @@ async function fileHash(text: string): Promise<string> {
 
 function requireWrite(permission: string) {
   if (permission === 'read-only') throw new Error('Current permission level is read-only');
+}
+
+function enforceRulePathRestrictions(workspace: string, file: string, rules: string[]): void {
+  const relative = relativePath(workspace, file).replaceAll('\\', '/');
+  const normalizedRules = rules.join('\n').toLowerCase();
+  const forbidden = new Set<string>();
+  for (const item of rules) {
+    const normalized = item.replaceAll('\\', '/').replace(/^\/+/, '');
+    if (normalized.endsWith('/')) forbidden.add(normalized.toLowerCase());
+  }
+  if (/dist\/?|generated/i.test(normalizedRules)) forbidden.add('dist/');
+  if (/build\/?|generated/i.test(normalizedRules)) forbidden.add('build/');
+  if (/coverage\/?|generated/i.test(normalizedRules)) forbidden.add('coverage/');
+  if (/node_modules\/?|generated/i.test(normalizedRules)) forbidden.add('node_modules/');
+  for (const prefix of forbidden) {
+    if (relative.toLowerCase() === prefix.slice(0, -1) || relative.toLowerCase().startsWith(prefix)) throw new Error(`Workspace rules prohibit editing ${prefix}`);
+  }
 }

@@ -75,7 +75,7 @@ program.command('providers:auth')
   .description('Show connected provider authentication state')
   .action(showAuth);
 
-const rulesCommand = program.command('rules').description('Manage OPENSYNTAX.md workspace rules');
+const rulesCommand = program.command('rules').description('Manage OPENSYNTAX.md and AGENTS.md workspace instructions');
 rulesCommand.command('init')
   .description('Create a starter OPENSYNTAX.md in the current workspace')
   .action(async () => { logger.success(`Created ${await createStarterRules(workspaceRoot())}`); });
@@ -92,7 +92,6 @@ program.argument('[prompt...]', 'optional one-shot request')
     const config = await resolveModelConfig(loaded, options.provider);
     const session = await loadOrCreateSession(workspace, options.session);
     const rules = await loadRulesForCli(workspace, options.debug);
-    panel('Rules', rules.files.length ? `✓ Loaded ${rules.files.length} OPENSYNTAX.md file${rules.files.length === 1 ? '' : 's'}\n✓ Applied workspace instructions` : 'No OPENSYNTAX.md found.');
     const loop = new AgentLoop({workspace, config, session, rules});
     const watcher = watchRules(workspace, rules, (next) => {
       loop.updateRules(next);
@@ -100,6 +99,8 @@ program.argument('[prompt...]', 'optional one-shot request')
     });
     process.once('exit', () => watcher.close());
     header(workspace, loop.modelName(), config.permission);
+    if (rules.files.length) logger.success('Workspace instructions loaded');
+    else if (options.debug) logger.status('No workspace instructions found.');
     if (prompt) await loop.run(prompt);
     else await runInteractive(loop);
   });

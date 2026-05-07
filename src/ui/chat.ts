@@ -11,7 +11,7 @@ import {resolveModelConfig} from '../auth/manager.js';
 import {header} from './renderer.js';
 import {workspaceRoot} from '../utils/paths.js';
 import {runDoctor} from '../doctor/doctor.js';
-import {renderRules, renderRulesDebug} from '../rules/context.js';
+import {createStarterRules, openNearestRulesFile, renderRules, renderRulesDebug} from '../rules/context.js';
 import {loadWorkspaceRulesSafe} from '../rules/loader.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
@@ -30,7 +30,7 @@ export async function runInteractive(loop: AgentLoop): Promise<void> {
 async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   const [command, ...rest] = input.slice(1).split(/\s+/);
   if (command === 'exit') return true;
-  if (command === 'help') panel('Commands', ['/help', '/clear', '/provider', '/providers', '/model [name]', '/models', '/tools', '/plan', '/session', '/diff', '/auth', '/login', '/logout', '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/exit'].join('\n'));
+  if (command === 'help') panel('Commands', ['/help', '/clear', '/provider', '/providers', '/model [name]', '/models', '/tools', '/plan', '/session', '/diff', '/auth', '/login', '/logout', '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init', '/exit'].join('\n'));
   else if (command === 'clear') process.stdout.write('\x1Bc');
   else if (command === 'provider') await refreshProvider(loop, await switchProviderPrompt());
   else if (command === 'providers') await showProviders();
@@ -60,10 +60,17 @@ async function handleRules(args: string[], loop: AgentLoop): Promise<void> {
     loop.updateRules(next);
     panel('Rules Reloaded', renderRules(next));
   } else if (action === 'open') {
-    panel('Rules File', 'Open OPENSYNTAX.md in your editor. If it does not exist, run: opensyntax rules init');
+    panel('Rules File', await openNearestRulesFile(workspaceRoot()));
+  } else if (action === 'init') {
+    try { panel('Rules File', `Created ${await createStarterRules(workspaceRoot())}`); }
+    catch (error) { panel('Rules File', isFileExistsError(error) ? 'OPENSYNTAX.md already exists.' : String(error)); }
   } else {
     panel('Rules', renderRules(loop.rulesContext()));
   }
+}
+
+function isFileExistsError(error: unknown): boolean {
+  return error instanceof Error && 'code' in error && (error as Error & {code?: string}).code === 'EEXIST';
 }
 
 async function refreshProvider(loop: AgentLoop, providerId?: string): Promise<void> {

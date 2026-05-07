@@ -1,27 +1,46 @@
+import {spawn} from 'node:child_process';
 import {writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import type {RuleContext} from './types.js';
+import {findNearestInstructionFile} from './loader.js';
 
 export const starterTemplate = `# OPENSYNTAX.md
 
-## Stack
+Workspace instructions for OpenSyntax.
+
+## Project Overview
+Describe what this project does.
+
+## Tech Stack
 - TypeScript
 - Node.js
+- Bun
 
-## Rules
-- Keep code modular.
-- Avoid unnecessary abstractions.
+## Coding Rules
+- Keep code simple, modular, and maintainable.
+- Prefer small composable functions.
 - Prefer small, focused changes.
-- Keep edits minimal and reviewable.
+- Keep edits minimal and focused.
+- Preserve existing design and architecture unless asked.
+
+## Package Manager
+- Use the package manager already used by this project.
+- Do not change lockfiles unless dependency changes require it.
 
 ## Testing
-- Run typecheck after edits.
-- Run relevant tests before completion.
+- Run relevant tests after code changes.
+- Run typecheck when TypeScript files change.
+- Explain any test failures clearly.
 
-## UI
-- Use responsive layouts.
-- Prefer professional typography.
-- Avoid unnecessary shadows and visual clutter.
+## Safety
+- Do not run destructive commands without approval.
+- Do not expose secrets or API keys.
+- Do not edit generated folders like dist/, build/, coverage/, or node_modules/.
+
+## Response Style
+- Be concise.
+- Explain changed files clearly.
+- Mention verification steps.
 `;
 
 export async function createStarterRules(cwd = process.cwd()): Promise<string> {
@@ -31,10 +50,19 @@ export async function createStarterRules(cwd = process.cwd()): Promise<string> {
 }
 
 export function renderRules(context: RuleContext): string {
-  if (!context.files.length) return 'No OPENSYNTAX.md found.';
-  return ['Loaded Rules:', ...context.files.map((file) => `✓ ${file.scope === 'global' ? 'Global' : 'Workspace'} ${file.path}`), '', 'Effective Rules:', ...context.effectiveBullets.slice(0, 30).map((item) => `- ${item}`)].join('\n');
+  if (!context.files.length) return 'No workspace instructions found.';
+  return ['Workspace Instructions', ...context.files.map((file) => `✓ Loaded ${file.path}`), '', 'Effective rules:', ...context.effectiveBullets.slice(0, 30).map((item) => `- ${item}`)].join('\n');
 }
 
 export function renderRulesDebug(context: RuleContext): string {
   return context.debug;
+}
+
+export async function openNearestRulesFile(cwd = process.cwd()): Promise<string> {
+  const file = await findNearestInstructionFile(cwd) ?? await createStarterRules(cwd);
+  const editor = process.env.EDITOR || process.env.VISUAL;
+  if (!editor) return `Instruction file: ${file}`;
+  const child = spawn(editor, [file], {stdio: 'inherit', shell: true});
+  child.unref();
+  return `Opened ${file}`;
 }

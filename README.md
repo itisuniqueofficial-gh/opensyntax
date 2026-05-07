@@ -162,14 +162,16 @@ OpenSyntax reads configuration from `~/.opensyntax/config.json`, environment var
 
 ## Workspace Instructions
 
-OpenSyntax automatically loads workspace instructions from `OPENSYNTAX.md` files and injects them into the runtime system prompt for every session.
+OpenSyntax automatically loads workspace instructions from `OPENSYNTAX.md` and OpenCode-compatible `AGENTS.md` files and injects them into the runtime system prompt for every session.
 
 Supported locations are merged from broadest to nearest scope:
 
 - `~/.opensyntax/OPENSYNTAX.md`
-- `OPENSYNTAX.md` in parent directories
-- `.opensyntax/OPENSYNTAX.md` in parent directories
-- nearest workspace or subproject `OPENSYNTAX.md`
+- `OPENSYNTAX.md` or `AGENTS.md` in parent directories
+- `.opensyntax/OPENSYNTAX.md` or `.opensyntax/AGENTS.md` in parent directories
+- nearest workspace or subproject instruction file
+
+Within the same directory, file priority is `OPENSYNTAX.md`, `AGENTS.md`, `.opensyntax/OPENSYNTAX.md`, then `.opensyntax/AGENTS.md`. Broader files load first; nearer files are later in the prompt and override broader guidance when instructions conflict.
 
 Create a starter file:
 
@@ -198,6 +200,9 @@ Example:
 
 ## Shell Rules
 - Never use npm. Use bun only.
+
+## Forbidden Paths
+- Do not edit dist/, build/, coverage/, or node_modules/.
 ```
 
 Interactive rule commands:
@@ -207,6 +212,7 @@ Interactive rule commands:
 /rules debug
 /rules reload
 /rules open
+/rules init
 ```
 
 Rules can include YAML frontmatter:
@@ -220,7 +226,9 @@ preferredProvider: anthropic
 ---
 ```
 
-Core safety protections always override workspace instructions. Use `.opensyntaxignore` to ignore directories such as `dist`, `build`, `.next`, or generated workspaces during rule discovery.
+Rules affect planning, prompt context, filesystem edits, and shell commands. For example, generated-path rules block edits to `dist/`, `build/`, `coverage/`, and `node_modules/`; package-manager rules such as "Use bun only" block `npm` commands and suggest using Bun instead.
+
+Core safety protections always override workspace instructions. Workspace rules cannot bypass permission prompts, destructive command protection, secret masking, workspace boundary checks, or the user's latest explicit instruction. Use `.opensyntaxignore` or `.gitignore` to ignore directories such as `dist`, `build`, `.next`, or generated workspaces during rule discovery.
 
 ### Config Command
 
