@@ -5,6 +5,13 @@ export const defaultConfig: ModelConfig & {
   thinkingDisplay: boolean;
   showReasoningSummary: boolean;
   modelFallback: boolean;
+  markdown: boolean;
+  syntaxHighlighting: boolean;
+  codeBox: boolean;
+  lineNumbers: boolean;
+  unicodeBoxes: boolean;
+  clickableLinks: boolean;
+  theme: 'dark' | 'light' | 'no-color';
 } = {
   provider: 'openai',
   model: 'gpt-4.1-mini',
@@ -16,7 +23,14 @@ export const defaultConfig: ModelConfig & {
   permission: 'shell-safe',
   thinkingDisplay: true,
   showReasoningSummary: false,
-  modelFallback: true
+  modelFallback: true,
+  markdown: true,
+  syntaxHighlighting: true,
+  codeBox: true,
+  lineNumbers: true,
+  unicodeBoxes: true,
+  clickableLinks: false,
+  theme: 'dark'
 };
 
 export const defaultSystemPrompt = `You are OpenSyntax, a terminal AI coding agent.

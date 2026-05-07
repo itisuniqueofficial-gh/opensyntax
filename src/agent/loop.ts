@@ -19,6 +19,7 @@ import {printToolStart, printToolEnd, printToolError, printSessionStatusBar} fro
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
 import {modelUnavailableMessage, fallbackModel} from '../model/capabilities.js';
 import {modelsForProvider} from '../model/registry.js';
+import {getStreamingRenderer, resetStreamingRenderer} from '../ui/renderers/streaming-markdown.js';
 
 export class AgentLoop {
   private config: AppConfig;
@@ -86,6 +87,9 @@ export class AgentLoop {
           toolCallId: m.toolCallId,
           toolCalls: m.toolCalls
         }));
+        // Use streaming renderer to avoid flickering on partial Markdown
+        const streamRenderer = getStreamingRenderer();
+        streamRenderer.reset();
         for await (const event of provider.stream({
           messages: chatMessages,
           tools: shouldEnableTools(request) ? this.registry.specs() : [],
@@ -93,11 +97,20 @@ export class AgentLoop {
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens
         })) {
-          if (event.type === 'text') { assistantText += event.text; assistantChunk(event.text); }
+          if (event.type === 'text') {
+            assistantText += event.text;
+            const rendered = streamRenderer.feed(event.text);
+            if (rendered) process.stdout.write(rendered);
+          }
           if (event.type === 'tool_call') toolCalls.push(event.call);
         }
+        // Flush any remaining buffered content
+        const tail = streamRenderer.end();
+        if (tail) process.stdout.write(tail);
+        resetStreamingRenderer();
       } catch (error) {
         const message = errorMessage(error);
+        resetStreamingRenderer();
         showThinkingStep('request-failed');
         // Model unavailable — try fallback if enabled
         if (this.config.modelFallback && isModelUnavailableError(message)) {

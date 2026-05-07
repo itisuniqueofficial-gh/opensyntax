@@ -19,6 +19,7 @@ import {createStarterRules} from './rules/context.js';
 import {setThinkingEnabled, setReasoningSummaryEnabled} from './ui/thinking.js';
 import {buildRuntimeState, refreshProviderModels} from './model/runtime.js';
 import {validateProviderModel} from './model/validation.js';
+import {applyAppConfig} from './ui/ui-config.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -101,6 +102,8 @@ program.argument('[prompt...]', 'optional one-shot request')
     // Apply thinking config from saved settings
     setThinkingEnabled(loaded.thinkingDisplay ?? true);
     setReasoningSummaryEnabled(loaded.showReasoningSummary ?? false);
+    // Apply UI rendering config
+    applyAppConfig(loaded);
     const session = await loadOrCreateSession(workspace, options.session);
     const rules = await loadRulesForCli(workspace, options.debug);
     const loop = new AgentLoop({workspace, config, session, rules});

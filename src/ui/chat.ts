@@ -21,6 +21,8 @@ import {loadWorkspaceRulesSafe} from '../rules/loader.js';
 import {setThinkingEnabled, setReasoningSummaryEnabled, renderThinkingStatus} from './thinking.js';
 import {cmdNew, cmdSessions, cmdResume, cmdHistory, cmdDeleteSession, cmdRenameSession} from '../session/commands.js';
 import {printHeader} from './layout.js';
+import {handleMarkdownCommand, handleHighlightCommand, handleCodeboxCommand, handleLinenosCommand} from '../commands/markdown.js';
+import {handleThemeCommand} from '../commands/theme.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -54,7 +56,8 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/search <query>', '/find <query>', '/grep <query>',
     '/git', '/diff', '/commit', '/pr',
     '/auto [on|off]', '/memory', '/session',
-    '/plugins', '/settings', '/theme',
+    '/plugins', '/settings', '/theme [dark|light|no-color]',
+    '/markdown [on|off]', '/highlight [on|off]', '/codebox [on|off]', '/linenos [on|off]',
     '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init',
     '/thinking [on|off]', '/reasoning',
     '/undo'
@@ -115,7 +118,11 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'memory') panel('Memory', sessionMemory(loop.session));
   else if (command === 'plugins') panel('Plugins', await pluginSummary(workspaceRoot()));
   else if (command === 'settings') panel('Settings', await renderSettings());
-  else if (command === 'theme') panel('Theme', 'Terminal theme follows your shell. Rich theme controls are planned for the interactive UI layer.');
+  else if (command === 'theme') await handleThemeCommand(rest.join(' '));
+  else if (command === 'markdown') await handleMarkdownCommand(rest[0] ?? '');
+  else if (command === 'highlight') await handleHighlightCommand(rest[0] ?? 'on');
+  else if (command === 'codebox') await handleCodeboxCommand(rest[0] ?? 'on');
+  else if (command === 'linenos') await handleLinenosCommand(rest[0] ?? 'on');
   else if (command === 'auth') await showAuth();
   else if (command === 'login') { if (await runProviderSetup(rest[0])) await refreshProvider(loop, rest[0]); }
   else if (command === 'logout') await logoutProviderPrompt(rest[0]);

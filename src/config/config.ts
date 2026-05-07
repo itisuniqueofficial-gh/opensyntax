@@ -17,7 +17,15 @@ const configSchema = z.object({
   permission: z.enum(['read-only', 'workspace-write', 'shell-safe', 'full-access']).default(defaultConfig.permission),
   thinkingDisplay: z.boolean().default(true),
   showReasoningSummary: z.boolean().default(false),
-  modelFallback: z.boolean().default(true)
+  modelFallback: z.boolean().default(true),
+  // UI rendering options
+  markdown: z.boolean().default(true),
+  syntaxHighlighting: z.boolean().default(true),
+  codeBox: z.boolean().default(true),
+  lineNumbers: z.boolean().default(true),
+  unicodeBoxes: z.boolean().default(true),
+  clickableLinks: z.boolean().default(false),
+  theme: z.enum(['dark', 'light', 'no-color']).default('dark')
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
