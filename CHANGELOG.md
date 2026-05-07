@@ -1,3 +1,32 @@
+## [0.5.3](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.2...v0.5.3) (2026-05-07)
+
+### Bug Fixes
+
+* handle empty rule ignore paths ([09108b2](https://github.com/itisuniqueofficial-gh/opensyntax/commit/09108b27782db896b767f1b17c91abdb0f6ef80c))
+
+
+# OpenSyntax v0.5.3
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: handle empty rule ignore paths
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.5.2](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.1...v0.5.2) (2026-05-07)
 
 ### Bug Fixes
