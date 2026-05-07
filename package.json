@@ -1,7 +1,7 @@
 {
   "name": "opensyntax",
   "version": "0.3.0",
-  "description": "Production-ready terminal AI coding agent with tools, sessions, git awareness, and multi-provider LLM support.",
+  "description": "Terminal-first AI coding agent with workspace tools, safe edits, git awareness, sessions, and multi-provider LLM support.",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -11,7 +11,24 @@
   "bugs": {
     "url": "https://github.com/itisuniqueofficial-gh/opensyntax/issues"
   },
-  "homepage": "https://github.com/itisuniqueofficial-gh/opensyntax#readme",
+  "homepage": "https://os.itisuniqueofficial.com/",
+  "keywords": [
+    "ai",
+    "agent",
+    "coding-agent",
+    "terminal",
+    "cli",
+    "llm",
+    "openai",
+    "anthropic",
+    "gemini",
+    "openrouter",
+    "typescript",
+    "developer-tools",
+    "code-assistant",
+    "automation",
+    "git"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
