@@ -1,3 +1,32 @@
+## [0.10.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.9.1...v0.10.0) (2026-05-07)
+
+### Features
+
+* advanced session system, codebox renderer, sidebar, status bar, and session commands ([8ab22b2](https://github.com/itisuniqueofficial-gh/opensyntax/commit/8ab22b2b10d30f2a512b3dad6d82347700330696))
+
+
+# OpenSyntax v0.10.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: advanced session system, codebox renderer, sidebar, status bar, and session commands
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.9.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.9.0...v0.9.1) (2026-05-07)
 
 ### Maintenance
