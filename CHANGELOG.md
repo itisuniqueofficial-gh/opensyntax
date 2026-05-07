@@ -1,3 +1,32 @@
+## [0.8.2](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.1...v0.8.2) (2026-05-07)
+
+### Bug Fixes
+
+* provider request sanitizer, capability matrix, and actionable error messages ([9db2674](https://github.com/itisuniqueofficial-gh/opensyntax/commit/9db267402b95c0a977ed1b43255600d9085e5d42))
+
+
+# OpenSyntax v0.8.2
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: provider request sanitizer, capability matrix, and actionable error messages
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.8.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.0...v0.8.1) (2026-05-07)
 
 ### Bug Fixes
