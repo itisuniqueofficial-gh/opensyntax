@@ -53,7 +53,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/history                — show current session history',
     '/delete-session <id>    — delete a session',
     '/rename-session [title] — rename current session',
-    '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth', '/auth debug', '/auth health',
+    '/provider [id]', '/providers', '/login [provider]', '/logout [provider]', '/auth', '/auth debug', '/auth health',
     '/model [name]', '/models', '/models all', '/models refresh', '/provider-list',
     '/capabilities', '/debug provider',
     '/tools', '/plan', '/tasks', '/todo', '/progress',
@@ -75,7 +75,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'delete-session') await cmdDeleteSession(rest.join(' '), loop);
   else if (command === 'rename-session') await cmdRenameSession(loop, rest.join(' '));
   else if (command === 'clear') process.stdout.write('\x1Bc');
-  else if (command === 'provider') await refreshProvider(loop, await switchProviderPrompt());
+  else if (command === 'provider') await switchProvider(loop, rest[0]);
   else if (command === 'providers') await showProviders();
   else if (command === 'provider-list') panel('Providers', await listProviderSummary());
   else if (command === 'model') {
@@ -83,8 +83,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
       panel('Model', await loop.setModel(rest.join(' ')));
     } else {
       // Interactive model picker for current provider
-      const config = await loadConfig();
-      const modelId = await pickModelInteractive(config.provider);
+      const modelId = await pickModelInteractive(loop.providerId);
       if (modelId) panel('Model', await loop.setModel(modelId));
       else panel('Model', loop.modelName());
     }
@@ -201,6 +200,23 @@ function isFileExistsError(error: unknown): boolean {
 async function refreshProvider(loop: AgentLoop, providerId?: string): Promise<void> {
   if (!providerId) return;
   const config = await resolveModelConfig(await loadConfig(), providerId);
-  loop.updateConfig(config);
+  await loop.setProviderConfig(config);
   header(workspaceRoot(), loop.modelName(), config.permission);
+}
+
+async function switchProvider(loop: AgentLoop, providerId?: string): Promise<void> {
+  if (providerId) {
+    const {listConnectedProviders, setDefaultProvider} = await import('../auth/manager.js');
+    const connected = await listConnectedProviders();
+    const match = connected.find((item) => item.providerId === providerId || item.name.toLowerCase() === providerId.toLowerCase());
+    if (!match) {
+      panel('Provider', [`Provider "${providerId}" is not connected.`, '', 'Run /login openai to connect OpenAI, then /provider openai.'].join('\n'));
+      return;
+    }
+    await setDefaultProvider(match.providerId);
+    await refreshProvider(loop, match.providerId);
+    panel('Provider Updated', `Active provider: ${loop.modelName()}`);
+    return;
+  }
+  await refreshProvider(loop, await switchProviderPrompt());
 }
