@@ -48,6 +48,7 @@
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "docs:validate": "node scripts/validate-docs.mjs",
     "release": "semantic-release",
     "clean": "node -e \"fs.rmSync('dist', {recursive: true, force: true})\"",
     "prepack": "npm run build"

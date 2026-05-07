@@ -4,6 +4,7 @@
   const sidebar = document.querySelector('[data-sidebar]');
 
   if (toggle) {
+    toggle.setAttribute('aria-expanded', 'false');
     toggle.addEventListener('click', () => {
       topnav?.classList.toggle('open');
       sidebar?.classList.toggle('open');
@@ -25,8 +26,12 @@
     button.type = 'button';
     button.textContent = 'Copy';
     button.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(code.innerText);
-      button.textContent = 'Copied';
+      try {
+        await navigator.clipboard.writeText(code.innerText);
+        button.textContent = 'Copied';
+      } catch {
+        button.textContent = 'Select code';
+      }
       setTimeout(() => { button.textContent = 'Copy'; }, 1400);
     });
     pre.appendChild(button);

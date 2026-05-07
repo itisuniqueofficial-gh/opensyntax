@@ -1,0 +1,16 @@
+{
+  "name": "OpenSyntax Docs",
+  "short_name": "OpenSyntax",
+  "description": "Documentation for the OpenSyntax terminal AI coding assistant.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "assets/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
