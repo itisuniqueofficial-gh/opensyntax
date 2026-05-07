@@ -1,3 +1,32 @@
+## [0.5.4](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.3...v0.5.4) (2026-05-07)
+
+### Bug Fixes
+
+* harden workspace rule loading ([8c8d820](https://github.com/itisuniqueofficial-gh/opensyntax/commit/8c8d820541f5f0c5dc94f1086c94223e767e0f24))
+
+
+# OpenSyntax v0.5.4
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: harden workspace rule loading
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.5.3](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.5.2...v0.5.3) (2026-05-07)
 
 ### Bug Fixes
