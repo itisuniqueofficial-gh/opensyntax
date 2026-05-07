@@ -1,3 +1,32 @@
+## [0.8.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.8.0...v0.8.1) (2026-05-07)
+
+### Bug Fixes
+
+* omit tool_calls field from assistant messages when empty to prevent 400 errors on NVIDIA NIM and other strict providers ([e706d21](https://github.com/itisuniqueofficial-gh/opensyntax/commit/e706d2133830e51b5b1456df60d9bbc26ff2d15f))
+
+
+# OpenSyntax v0.8.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: omit tool_calls field from assistant messages when empty to prevent 400 errors on NVIDIA NIM and other strict providers
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.8.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.7.1...v0.8.0) (2026-05-07)
 
 ### Features
