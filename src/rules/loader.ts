@@ -33,7 +33,8 @@ export async function findRuleCandidates(cwd: string): Promise<Array<{path: stri
   if (homePath !== globalPath) await pushIfExists(candidates, homePath, 'global', 1);
   for (let index = 0; index < dirs.length; index++) {
     const dir = dirs[index];
-    if (ignores.ignores(relativeFromCwd(cwd, dir))) continue;
+    const relativeDir = relativeFromCwd(cwd, dir);
+    if (relativeDir && ignores.ignores(relativeDir)) continue;
     for (const name of RULE_NAMES) await pushIfExists(candidates, path.join(dir, name), 'workspace', 10 + index);
   }
   return uniqueByPath(candidates).sort((a, b) => a.depth - b.depth);
