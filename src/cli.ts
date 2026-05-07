@@ -20,6 +20,8 @@ import {setThinkingEnabled, setReasoningSummaryEnabled} from './ui/thinking.js';
 import {buildRuntimeState, refreshProviderModels} from './model/runtime.js';
 import {validateProviderModel} from './model/validation.js';
 import {applyAppConfig} from './ui/ui-config.js';
+import {renderTerminal} from './commands/terminal.js';
+import {renderPermissions} from './commands/permissions.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -28,7 +30,7 @@ const program = new Command()
   .version('0.3.0')
   .option('-m, --model <model>', 'override model')
   .option('-p, --provider <provider>', 'openai, anthropic, gemini, openrouter, groq, together, nvidia, deepseek, mistral, ollama, lmstudio, or azure-openai')
-  .option('--permission <level>', 'read-only, workspace-write, shell-safe, or full-access')
+  .option('--permission <level>', 'read-only, workspace-safe, workspace-write, shell-safe, full-os, or danger')
   .option('--session <id>', 'resume a specific session')
   .option('--debug', 'show debug details for optional subsystem failures');
 
@@ -79,6 +81,15 @@ program.command('config')
 program.command('doctor')
   .description('Check providers, configuration, git, and workspace health')
   .action(async () => { panel('Doctor', await runDoctor()); });
+
+program.command('terminal')
+  .description('Show OS, shell, terminal, and package-manager detection')
+  .action(async () => { panel('Terminal', await renderTerminal(workspaceRoot())); });
+
+program.command('permissions')
+  .description('Show or change OpenSyntax permission mode')
+  .argument('[mode]', 'read-only, workspace-safe, workspace-write, shell-safe, full-os, or danger')
+  .action(async (mode?: string) => { panel('Permissions', await renderPermissions(mode)); });
 
 program.command('providers:auth')
   .description('Show connected provider authentication state')

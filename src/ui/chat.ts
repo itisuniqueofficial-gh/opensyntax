@@ -24,6 +24,10 @@ import {printHeader} from './layout.js';
 import {handleMarkdownCommand, handleHighlightCommand, handleCodeboxCommand, handleLinenosCommand} from '../commands/markdown.js';
 import {handleThemeCommand} from '../commands/theme.js';
 import {runAuthDebug, runAuthHealthCheck} from '../commands/auth-debug.js';
+import {renderCommandRisk, renderEnv, renderOS, renderPath, renderShell, renderTerminal} from '../commands/terminal.js';
+import {renderPermissions} from '../commands/permissions.js';
+import {commandForScript, renderScripts} from '../commands/scripts.js';
+import {executeCommandTool} from '../tools/shell.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -59,6 +63,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/auto [on|off]', '/memory', '/session',
     '/plugins', '/settings', '/theme [dark|light|no-color]',
     '/markdown [on|off]', '/highlight [on|off]', '/codebox [on|off]', '/linenos [on|off]',
+    '/terminal', '/os', '/shell', '/permissions [mode]', '/scripts', '/run <script>', '/command <cmd>', '/env', '/path',
     '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init',
     '/thinking [on|off]', '/reasoning',
     '/undo'
@@ -132,6 +137,15 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'login') { if (await runProviderSetup(rest[0])) await refreshProvider(loop, rest[0]); }
   else if (command === 'logout') await logoutProviderPrompt(rest[0]);
   else if (command === 'doctor') panel('Doctor', await runDoctor());
+  else if (command === 'terminal') panel('Terminal', await renderTerminal(workspaceRoot()));
+  else if (command === 'os') panel('OS', await renderOS());
+  else if (command === 'shell') panel('Shell', renderShell());
+  else if (command === 'permissions') panel('Permissions', await renderPermissions(rest[0]));
+  else if (command === 'scripts') panel('Scripts', await renderScripts(workspaceRoot()));
+  else if (command === 'run') await runScript(rest.join(' '), loop);
+  else if (command === 'command') panel('Command Risk', renderCommandRisk(rest.join(' ')));
+  else if (command === 'env') panel('Environment', await renderEnv());
+  else if (command === 'path') panel('PATH', renderPath());
   else if (command === 'rules') await handleRules(rest, loop);
   else if (command === 'thinking') {
     if (rest[0] === 'on') { setThinkingEnabled(true); panel('Thinking', 'Thinking display enabled.'); }
@@ -147,6 +161,18 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'undo') panel('Undo', 'No automatic destructive undo is run. Use /diff, then ask for a specific safe reversal.');
   else panel('Unknown command', `/${command}`);
   return false;
+}
+
+async function runScript(script: string, loop: AgentLoop): Promise<void> {
+  if (!script) { panel('Run Script', 'Usage: /run <script>'); return; }
+  try {
+    const command = await commandForScript(workspaceRoot(), script);
+    const config = await loadConfig();
+    const result = await executeCommandTool.execute({command, reason: `Run package script ${script}`, timeoutMs: config.commandTimeoutMs, permission: 'safe'}, {workspace: workspaceRoot(), permission: config.permission, rules: loop.rulesContext(), log: (message) => process.stdout.write(message.endsWith('\n') ? message : `${message}\n`), askPermission: async (request) => (await import('../agent/permissions.js')).askPermission(request)});
+    if (!result.ok) panel('Run Failed', result.output.slice(0, 4000));
+  } catch (error) {
+    panel('Run Script', error instanceof Error ? error.message : String(error));
+  }
 }
 
 async function handleRules(args: string[], loop: AgentLoop): Promise<void> {

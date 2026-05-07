@@ -32,6 +32,8 @@
     <tr><td><code>opensyntax providers</code></td><td>List supported and connected providers.</td></tr>
     <tr><td><code>opensyntax models [provider]</code></td><td>List model defaults and examples.</td></tr>
     <tr><td><code>opensyntax doctor</code></td><td>Check provider, config, git, and workspace health.</td></tr>
+    <tr><td><code>opensyntax terminal</code></td><td>Show OS, shell, WSL, Node, and package-manager detection.</td></tr>
+    <tr><td><code>opensyntax permissions [mode]</code></td><td>Show or change saved permission mode.</td></tr>
     <tr><td><code>opensyntax rules init</code></td><td>Create a starter <code>OPENSYNTAX.md</code>.</td></tr>
   </tbody></table></div>
 
@@ -47,6 +49,15 @@
     <tr><td><code>/doctor</code></td><td>Check provider, git, and streaming.</td><td>Health report.</td></tr>
     <tr><td><code>/session</code></td><td>List saved sessions.</td><td>Session IDs.</td></tr>
     <tr><td><code>/tools</code></td><td>List agent tools.</td><td>Tool names.</td></tr>
+    <tr><td><code>/terminal</code></td><td>Show OS, shell, WSL, Node, and package-manager detection.</td><td>Terminal report.</td></tr>
+    <tr><td><code>/os</code></td><td>Show structured OS detection details.</td><td>OS JSON.</td></tr>
+    <tr><td><code>/shell</code></td><td>Show detected shell.</td><td>Shell name.</td></tr>
+    <tr><td><code>/permissions [mode]</code></td><td>Show or change command/file permission mode.</td><td>Permission state.</td></tr>
+    <tr><td><code>/scripts</code></td><td>List package scripts and package-manager commands.</td><td>Script list.</td></tr>
+    <tr><td><code>/run &lt;script&gt;</code></td><td>Run a package script with terminal risk checks.</td><td>Streaming command output.</td></tr>
+    <tr><td><code>/command &lt;cmd&gt;</code></td><td>Classify terminal command risk before running.</td><td>Risk report.</td></tr>
+    <tr><td><code>/env</code></td><td>Show sanitized runtime environment details.</td><td>Masked environment.</td></tr>
+    <tr><td><code>/path</code></td><td>Show PATH entries.</td><td>PATH list.</td></tr>
     <tr><td><code>/plan</code></td><td>Show task plan.</td><td>Pending and completed steps.</td></tr>
     <tr><td><code>/tasks</code> / <code>/todo</code></td><td>Show active task plan.</td><td>Task states.</td></tr>
     <tr><td><code>/progress</code></td><td>Show task completion progress.</td><td>Progress report.</td></tr>
