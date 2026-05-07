@@ -1,3 +1,32 @@
+## [0.3.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.3.0...v0.3.1) (2026-05-07)
+
+### Documentation
+
+* improve project README ([371ae0a](https://github.com/itisuniqueofficial-gh/opensyntax/commit/371ae0a91bfb84767a33057c5dba685b452262e7))
+
+
+# OpenSyntax v0.3.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- docs: improve project README
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.3.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.2.1...v0.3.0) (2026-05-07)
 
 ### Features
