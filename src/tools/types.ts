@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import type {ToolSpec} from '../model/types.js';
+import type {RuleContext} from '../rules/types.js';
 
 export type PermissionLevel = 'read-only' | 'workspace-write' | 'shell-safe' | 'full-access';
 
@@ -7,6 +8,7 @@ export type ToolContext = {
   workspace: string;
   permission: PermissionLevel;
   signal?: AbortSignal;
+  rules?: RuleContext;
   log: (message: string) => void;
   askPermission: (request: PermissionRequest) => Promise<boolean>;
 };

@@ -4,5 +4,8 @@ export {loadConfig, saveConfig} from './config/config.js';
 export {defaultRegistry, ToolRegistry} from './tools/registry.js';
 export {providerRegistry, getProvider, requireProvider} from './providers/registry.js';
 export {loadProviders, saveProviders} from './auth/storage.js';
+export {loadWorkspaceRules} from './rules/loader.js';
+export {renderRules, renderRulesDebug} from './rules/context.js';
 export type {Tool, ToolContext, ToolResult, PermissionLevel} from './tools/types.js';
 export type {ChatMessage, ToolCall, ModelConfig} from './model/types.js';
+export type {RuleContext, RuleFile} from './rules/types.js';

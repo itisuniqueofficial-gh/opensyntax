@@ -160,6 +160,68 @@ opensyntax doctor
 
 OpenSyntax reads configuration from `~/.opensyntax/config.json`, environment variables, and CLI flags. CLI flags override environment and saved config for the current run.
 
+## Workspace Instructions
+
+OpenSyntax automatically loads workspace instructions from `OPENSYNTAX.md` files and injects them into the runtime system prompt for every session.
+
+Supported locations are merged from broadest to nearest scope:
+
+- `~/.opensyntax/OPENSYNTAX.md`
+- `OPENSYNTAX.md` in parent directories
+- `.opensyntax/OPENSYNTAX.md` in parent directories
+- nearest workspace or subproject `OPENSYNTAX.md`
+
+Create a starter file:
+
+```bash
+opensyntax rules init
+```
+
+Example:
+
+```md
+# OPENSYNTAX.md
+
+## Stack
+- TypeScript
+- Bun
+- Cloudflare Pages
+
+## Rules
+- Keep code modular.
+- Avoid unnecessary abstractions.
+- Keep edits minimal.
+
+## Testing
+- Run typecheck after edits.
+- Run tests before completion.
+
+## Shell Rules
+- Never use npm. Use bun only.
+```
+
+Interactive rule commands:
+
+```txt
+/rules
+/rules debug
+/rules reload
+/rules open
+```
+
+Rules can include YAML frontmatter:
+
+```md
+---
+priority: high
+autoTest: true
+shellSafety: strict
+preferredProvider: anthropic
+---
+```
+
+Core safety protections always override workspace instructions. Use `.opensyntaxignore` to ignore directories such as `dist`, `build`, `.next`, or generated workspaces during rule discovery.
+
 ### Config Command
 
 ```bash

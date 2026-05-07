@@ -11,6 +11,9 @@ import {ensureOnboarded, logoutProviderPrompt, runProviderSetup, runSettings} fr
 import {hasConfiguredProvider, resolveModelConfig} from './auth/manager.js';
 import {showAuth, showModels, showProviders} from './commands/providers.js';
 import {runDoctor} from './doctor/doctor.js';
+import {loadWorkspaceRules} from './rules/loader.js';
+import {watchRules} from './rules/watcher.js';
+import {createStarterRules} from './rules/context.js';
 
 const program = new Command()
   .name('opensyntax')
@@ -71,6 +74,11 @@ program.command('providers:auth')
   .description('Show connected provider authentication state')
   .action(showAuth);
 
+const rulesCommand = program.command('rules').description('Manage OPENSYNTAX.md workspace rules');
+rulesCommand.command('init')
+  .description('Create a starter OPENSYNTAX.md in the current workspace')
+  .action(async () => { logger.success(`Created ${await createStarterRules(workspaceRoot())}`); });
+
 program.argument('[prompt...]', 'optional one-shot request')
   .action(async (promptParts: string[], options: {model?: string; provider?: string; permission?: string; session?: string}) => {
     const workspace = workspaceRoot();
@@ -82,7 +90,14 @@ program.argument('[prompt...]', 'optional one-shot request')
     const loaded = await loadConfig({model: options.model, provider: normalizeProvider(options.provider) as any, permission: options.permission as any});
     const config = await resolveModelConfig(loaded, options.provider);
     const session = await loadOrCreateSession(workspace, options.session);
-    const loop = new AgentLoop({workspace, config, session});
+    const rules = await loadWorkspaceRules(workspace);
+    panel('Rules', rules.files.length ? `✓ Loaded ${rules.files.length} OPENSYNTAX.md file${rules.files.length === 1 ? '' : 's'}\n✓ Applied workspace instructions` : 'No OPENSYNTAX.md found.');
+    const loop = new AgentLoop({workspace, config, session, rules});
+    const watcher = watchRules(workspace, rules, (next) => {
+      loop.updateRules(next);
+      panel('Rules Reloaded', next.files.length ? `Reloaded ${next.files.length} OPENSYNTAX.md file${next.files.length === 1 ? '' : 's'}` : 'No OPENSYNTAX.md found.');
+    });
+    process.once('exit', () => watcher.close());
     header(workspace, loop.modelName(), config.permission);
     if (prompt) await loop.run(prompt);
     else await runInteractive(loop);

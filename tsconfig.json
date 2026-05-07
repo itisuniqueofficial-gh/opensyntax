@@ -20,6 +20,7 @@
     "src/commands/**/*.ts",
     "src/doctor/**/*.ts",
     "src/providers/**/*.ts",
+    "src/rules/**/*.ts",
     "src/tools/**/*.ts",
     "src/model/**/*.ts",
     "src/ui/chat.ts",
