@@ -113,6 +113,7 @@
   }
 
   function ensureSponsorNavigation() {
+    addLink(document.querySelector('[data-sidebar]'), 'File Tools', 'file-tools.html', 'Providers');
     addLink(document.querySelector('[data-topnav]'), 'Sponsors', 'sponsors.html', 'GitHub');
     addLink(document.querySelector('[data-sidebar]'), 'Sponsors', 'sponsors.html');
     document.querySelectorAll('.footer-links').forEach((footer) => addLink(footer, 'Sponsors', 'sponsors.html'));

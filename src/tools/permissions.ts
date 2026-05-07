@@ -21,6 +21,9 @@ export type OperationType =
   | 'move-file'
   | 'create-folder'
   | 'delete-folder'
+  | 'copy-folder'
+  | 'move-folder'
+  | 'rename-folder'
   | 'shell';
 
 export type PermissionDecision = {

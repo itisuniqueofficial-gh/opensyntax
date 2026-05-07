@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>File Tools - OpenSyntax Docs</title>
+  <meta name="description" content="OpenSyntax file and folder tools, permission modes, approvals, workspace boundaries, diff previews, and audit logs.">
+  <link rel="canonical" href="https://os.itisuniqueofficial.com/file-tools.html">
+  <meta property="og:title" content="OpenSyntax File Tools">
+  <meta property="og:description" content="Safe real workspace file and folder operations for OpenSyntax.">
+  <meta property="og:url" content="https://os.itisuniqueofficial.com/file-tools.html">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="index.html"><span class="brand-mark">OS</span><span>OpenSyntax</span></a><button class="menu-toggle" data-menu-toggle>Menu</button><nav class="topnav" data-topnav><a href="index.html">Docs</a><a href="https://github.com/itisuniqueofficial-gh/opensyntax">GitHub</a><a href="https://www.npmjs.com/package/opensyntax">NPM</a><a href="https://itisuniqueofficial.com/">Website</a></nav></div></header>
+<div class="layout"><aside class="sidebar" data-sidebar><div class="sidebar-title">Documentation</div><a href="getting-started.html">Getting Started</a><a href="installation.html">Installation</a><a href="configuration.html">Configuration</a><a href="file-tools.html">File Tools</a><a href="providers.html">Providers</a><a href="commands.html">Commands</a><a href="usage.html">Usage</a><a href="safety.html">Safety</a><a href="troubleshooting.html">Troubleshooting</a><a href="release-system.html">Release System</a><a href="contributing.html">Contributing</a><a href="changelog.html">Changelog</a></aside>
+<main id="content" class="content">
+  <h1>File Tools</h1>
+  <p class="lead">OpenSyntax performs real workspace file and folder operations through typed tools. The model never directly manipulates files.</p>
+  <h2>Permission Modes</h2>
+  <div class="table"><table><thead><tr><th>Mode</th><th>Allowed</th><th>Approval Required</th></tr></thead><tbody><tr><td><code>read-only</code></td><td>Read, list, search, git status, git diff.</td><td>None.</td></tr><tr><td><code>workspace-write</code></td><td>Create, edit, patch, copy, move, rename inside the workspace.</td><td>Overwrites, deletes, recursive operations, lockfiles, <code>.env</code>, secrets.</td></tr><tr><td><code>shell-safe</code></td><td>Workspace tools plus safe shell commands.</td><td>Package installs, destructive shell commands, side-effectful builds.</td></tr><tr><td><code>full-access</code></td><td>Broadest workspace and shell capability.</td><td>All destructive actions still require approval.</td></tr></tbody></table></div>
+  <h2>Tools</h2>
+  <p>File tools include <code>read_file</code>, <code>read_many_files</code>, <code>create_file</code>, <code>write_file</code>, <code>patch_file</code>, <code>apply_patch</code>, <code>replace_in_file</code>, <code>insert_into_file</code>, <code>append_to_file</code>, <code>delete_file</code>, <code>rename_file</code>, <code>copy_file</code>, <code>move_file</code>, <code>stat_path</code>, <code>file_exists</code>, and <code>generate_diff</code>.</p>
+  <p>Folder tools include <code>list_folder</code>, <code>create_folder</code>, <code>delete_folder</code>, <code>copy_folder</code>, <code>move_folder</code>, and <code>rename_folder</code>.</p>
+  <h2>Safety Checks</h2>
+  <ul><li>Normalize and resolve every path inside the current workspace.</li><li>Block path traversal, <code>.git</code>, workspace root, home, and OS folders.</li><li>Respect <code>.gitignore</code>, <code>.opensyntaxignore</code>, <code>OPENSYNTAX.md</code>, and <code>AGENTS.md</code> restrictions.</li><li>Generate diffs before writes and warn on dirty git files.</li><li>Write audit records to <code>~/.opensyntax/audit/file-operations.jsonl</code>.</li></ul>
+  <h2>Folder Delete Confirmation</h2>
+  <pre><code>OpenSyntax wants to delete folder:
+
+docs/old
+
+Files: 18
+Folders: 2
+Size: 124 KB
+
+Type exactly:
+delete docs/old</code></pre>
+  <footer class="footer"><strong>Made with love by It Is Unique Official</strong></footer>
+</main></div><script src="assets/js/main.js"></script></body></html>

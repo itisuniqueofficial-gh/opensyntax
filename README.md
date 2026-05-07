@@ -281,10 +281,12 @@ Supported provider values:
 
 Supported permission levels:
 
-- `read-only`: file reading, search, and git inspection only.
-- `workspace-write`: permits workspace file edits, blocks shell execution.
-- `shell-safe`: permits shell commands and prompts for risky commands.
-- `full-access`: highest access level; risky actions still go through explicit tool approval paths.
+| Level | Allowed | Requires Approval | Blocked |
+| --- | --- | --- | --- |
+| `read-only` | Read files, list folders, search files, `git_status`, `git_diff`. | None. | File/folder writes, deletes, moves, copies, and modifying shell commands. |
+| `workspace-write` | Create/edit/patch files, create folders, copy/move/rename files and folders inside the workspace. | Overwrites, deletes, recursive operations, lockfiles, `.env`, and secret-looking paths. | Outside-workspace edits, `.git`, workspace root, home/system folders, shell execution. |
+| `shell-safe` | `workspace-write` tools plus safe shell commands. | Package installs, side-effectful builds, deletes, `git reset/clean`, `chmod/chown`, Docker prune. | Silent destructive shell operations. |
+| `full-access` | Broadest workspace and shell capability. | All destructive or sensitive actions still require explicit approval. | Hard blocks such as deleting `.git`, workspace root, home, or OS folders. |
 
 ### Environment Variables
 
@@ -479,11 +481,11 @@ Summary + persisted session
 Core components:
 
 - **Agent loop**: coordinates planning, model streaming, tool execution, observations, and persistence.
-- **Tool system**: exposes filesystem, search, shell, git, diff, and permission tools through typed schemas.
+- **Tool system**: exposes filesystem, folder, search, shell, git, diff, and permission tools through typed schemas.
 - **Provider abstraction**: isolates model-specific APIs behind a common streaming interface.
 - **Terminal UI**: renders compact status lines, markdown, code blocks, prompts, and panels.
 - **Session store**: persists messages, plans, and tool logs in local JSON files.
-- **Safety system**: applies permissions, risky command detection, path boundaries, and file hash checks.
+- **Safety system**: applies permissions, approval prompts, path boundaries, git dirty warnings, diff previews, audit logs, and file hash/mtime checks.
 
 ## Project Structure
 
@@ -508,9 +510,14 @@ src/
 │   ├── history.ts         # Session and plan record types
 │   └── store.ts           # Local session persistence
 ├── tools/
+│   ├── audit.ts           # JSONL audit log for file operations
 │   ├── diff.ts            # Unified diff preview tool
-│   ├── filesystem.ts      # Read, write, and patch tools
+│   ├── filesystem.ts      # Read, write, patch, copy, move, delete, stat tools
+│   ├── folder.ts          # Folder create/list/copy/move/delete tools
 │   ├── git.ts             # Git status and diff tools
+│   ├── patch.ts           # Text, unified diff, and JSON patch helpers
+│   ├── path-safety.ts     # Workspace boundary and protected path checks
+│   ├── permissions.ts     # Permission mode decisions
 │   ├── registry.ts        # Tool registry and validation
 │   ├── search.ts          # File listing and content search
 │   ├── shell.ts           # Shell execution with risk controls
@@ -535,22 +542,42 @@ src/
 
 ## Tool System
 
-OpenSyntax tools are normal TypeScript modules with explicit schemas and controlled execution.
+OpenSyntax tools are normal TypeScript modules with explicit schemas and controlled execution. The model never reads or writes the filesystem directly; every operation goes through validation, workspace boundary checks, permission checks, optional approval, diff generation, result verification, and audit logging.
 
 Implemented tools:
 
 | Tool | Purpose |
 | --- | --- |
 | `read_file` | Read a workspace file with line-windowing and hash metadata. |
-| `write_file` | Write a workspace file with diff output and modification checks. |
-| `patch_file` | Replace an exact text range and fail on ambiguous matches. |
+| `read_many_files` | Read multiple workspace files with per-file byte limits. |
+| `write_file` | Write a workspace file with diff output, overwrite checks, hash/mtime checks, and audit logging. |
+| `create_file` | Create a new workspace file and parent folders. |
+| `patch_file` | Apply exact text replacement, unified diff patches, or JSON patch operations. |
+| `apply_patch` | Apply a unified diff patch to a workspace file. |
+| `replace_in_file` | Replace exact text with optional all-occurrence mode. |
+| `insert_into_file` | Insert text before/after a match or at a line boundary. |
+| `append_to_file` | Append text while preserving line endings. |
+| `delete_file` | Delete a file after explicit approval. |
+| `rename_file` | Rename a file inside the workspace. |
+| `copy_file` | Copy a file inside the workspace. |
+| `move_file` | Move a file inside the workspace. |
+| `list_folder` | List folder contents, optionally recursively. |
+| `create_folder` | Create nested folders. |
+| `delete_folder` | Delete folders with exact typed confirmation for recursive deletes. |
+| `copy_folder` | Recursively copy folders with size/risk checks. |
+| `move_folder` | Move folders safely inside the workspace. |
+| `rename_folder` | Rename folders safely inside the workspace. |
 | `list_files` | List files within the workspace. |
 | `search_files` | Search workspace content. |
+| `stat_path` | Return path metadata such as file/folder type, size, and mtime. |
+| `file_exists` | Check whether a workspace path exists. |
 | `execute_command` | Run non-interactive shell commands with timeout and risk checks. |
 | `git_status` | Inspect branch, dirty state, and recent commits. |
 | `git_diff` | Show staged or unstaged git diffs. |
-| `diff_preview` | Generate unified diff previews. |
+| `diff_preview` / `generate_diff` | Generate unified diff previews. |
 | `ask_permission` | Request explicit approval from the user. |
+
+All file-operation tools return structured results with `ok`, `tool`, `path`, `changed`, `diff`, `message`, and optional `error` or `warnings` fields.
 
 ## Safety Features
 
@@ -558,11 +585,30 @@ OpenSyntax is designed to be useful without being reckless.
 
 - **Workspace path guardrails** prevent tools from reading or writing outside the current workspace unless explicitly extended in code.
 - **Git-first context** means the agent inspects repository state before edits in a session.
-- **Patch-based editing** prefers exact replacements and fails when search text is missing or ambiguous.
-- **Concurrent modification detection** uses file hashes to avoid overwriting changed files.
+- **Patch-based editing** supports exact replacements, line inserts, appends, unified diffs, and JSON patches while preserving line endings and final newlines.
+- **Concurrent modification detection** uses file hashes and optional modified-time checks to avoid overwriting changed files.
+- **Git dirty warnings** are emitted before editing tracked files with uncommitted changes.
+- **Audit logs** for successful mutating file/folder operations are written to `~/.opensyntax/audit/file-operations.jsonl`.
+- **Hard blocks** refuse deleting or editing `.git`, the workspace root, the home directory, and common OS folders.
+- **Approval prompts** are required for deletes, overwrites, recursive operations, `.env`, lockfiles, secret-looking paths, and destructive shell commands.
 - **Risky command detection** prompts before commands involving `rm`, `sudo`, `git reset`, `git clean`, force push, `chmod`, `chown`, package manager installs, recursive deletes, and Docker prune operations.
 - **Permission levels** let teams choose the right level of automation for each repository.
 - **No automatic destructive undo**; reversals should be requested explicitly and reviewed through git diff.
+
+Example folder-delete approval:
+
+```txt
+OpenSyntax wants to delete folder:
+
+docs/old
+
+Files: 18
+Folders: 2
+Size: 124 KB
+
+Type exactly:
+delete docs/old
+```
 
 ## Development
 

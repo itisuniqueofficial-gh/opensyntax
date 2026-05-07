@@ -14,14 +14,24 @@ export type ToolContext = {
 };
 
 export type PermissionRequest = {
+  tool?: string;
+  path?: string;
   action: string;
   reason: string;
   risk: 'low' | 'medium' | 'high';
+  confirmationText?: string;
 };
 
 export type ToolResult = {
   ok: boolean;
   output: string;
+  tool?: string;
+  path?: string;
+  changed?: boolean;
+  diff?: string;
+  message?: string;
+  error?: string;
+  warnings?: string[];
   data?: unknown;
 };
 
