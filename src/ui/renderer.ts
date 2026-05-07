@@ -1,22 +1,26 @@
-import chalk from 'chalk';
-import {renderMarkdown} from './markdown.js';
+/**
+ * Renderer — thin compatibility shim over the new layout system.
+ * All new code should import from layout.ts directly.
+ */
 
-export function header(workspace: string, model: string, permission: string): void {
-  process.stdout.write(`${chalk.bold('OpenSyntax')} ${chalk.gray('AI Coding Agent')}\n`);
-  process.stdout.write(`${chalk.green('✓')} Model: ${chalk.cyan(model)}\n`);
-  process.stdout.write(`${chalk.green('✓')} Shell: ${chalk.green(permission)}\n`);
-  process.stdout.write(`${chalk.green('✓')} Workspace: ${workspace}\n`);
-  process.stdout.write(chalk.gray('Ready. Type /help for commands, /repo for workspace intelligence, /auto for autonomous mode, Ctrl+C or /exit to quit.\n\n'));
+import chalk from 'chalk';
+import {renderMarkdown} from './renderers/markdown.js';
+import {printHeader, printPanel, printStatus, printAssistantChunk as _chunk} from './layout.js';
+
+export {renderMarkdown};
+
+export function header(workspace: string, model: string, permission: string, sessionId?: string, sessionTitle?: string): void {
+  printHeader({workspace, model, permission, sessionId: sessionId ?? '', sessionTitle});
 }
 
 export function assistantChunk(text: string): void {
-  process.stdout.write(renderMarkdown(text));
+  _chunk(text);
 }
 
 export function panel(title: string, body: string): void {
-  process.stdout.write(`\n${chalk.bold.cyan(title)}\n${body}\n`);
+  printPanel(title, body);
 }
 
 export function status(message: string): void {
-  process.stdout.write(`${chalk.gray('·')} ${chalk.gray(message)}\n`);
+  printStatus(message);
 }

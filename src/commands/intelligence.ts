@@ -117,11 +117,12 @@ export async function prDraft(workspace: string): Promise<string> {
   return [`PR title: Update ${branch.output || 'current branch'}`, '', '## Summary', '- Describe the user-facing change.', '- Mention validation performed.', '', '## Recent commits', log.output || 'No commits found.', '', '## Diff summary', diff].join('\n');
 }
 
-export function sessionMemory(session: SessionRecord): string {
-  return [`Session: ${session.id}`, `Messages: ${session.messages.length}`, `Tool calls: ${session.toolLog.length}`, `Plan items: ${session.plan.length}`, `Created: ${session.createdAt}`, `Updated: ${session.updatedAt}`].join('\n');
+export function sessionMemory(session: {id: string; messages: unknown[]; plan: unknown[]; createdAt: string; updatedAt: string; toolCalls?: unknown[]; toolLog?: unknown[]}): string {
+  const toolCount = (session as any).toolCalls?.length ?? (session as any).toolLog?.length ?? 0;
+  return [`Session: ${session.id}`, `Messages: ${session.messages.length}`, `Tool calls: ${toolCount}`, `Plan items: ${session.plan.length}`, `Created: ${session.createdAt}`, `Updated: ${session.updatedAt}`].join('\n');
 }
 
-export function renderProgress(session: SessionRecord): string {
+export function renderProgress(session: {plan: Array<{state: string; content: string}>}): string {
   const total = session.plan.length;
   const completed = session.plan.filter((item) => item.state === 'completed').length;
   const failed = session.plan.filter((item) => item.state === 'failed').length;

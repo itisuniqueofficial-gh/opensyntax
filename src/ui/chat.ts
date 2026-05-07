@@ -19,6 +19,8 @@ import {architectureSummary, commitDraft, dependencySummary, diffSummary, findFi
 import {createStarterRules, openNearestRulesFile, renderRules, renderRulesDebug} from '../rules/context.js';
 import {loadWorkspaceRulesSafe} from '../rules/loader.js';
 import {setThinkingEnabled, setReasoningSummaryEnabled, renderThinkingStatus} from './thinking.js';
+import {cmdNew, cmdSessions, cmdResume, cmdHistory, cmdDeleteSession, cmdRenameSession} from '../session/commands.js';
+import {printHeader} from './layout.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -38,6 +40,12 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   if (command === 'exit') return true;
   if (command === 'help') panel('Commands', [
     '/help', '/clear', '/exit',
+    '/new                    — start a fresh chat',
+    '/sessions               — browse saved sessions',
+    '/resume [id]            — resume a previous session',
+    '/history                — show current session history',
+    '/delete-session <id>    — delete a session',
+    '/rename-session [title] — rename current session',
     '/provider', '/providers', '/login [provider]', '/logout [provider]', '/auth',
     '/model [name]', '/models', '/models all', '/models refresh', '/provider-list',
     '/capabilities', '/debug provider',
@@ -45,12 +53,18 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
     '/repo', '/architecture', '/dependencies', '/symbols [query]',
     '/search <query>', '/find <query>', '/grep <query>',
     '/git', '/diff', '/commit', '/pr',
-    '/auto [on|off]', '/memory', '/history', '/session',
+    '/auto [on|off]', '/memory', '/session',
     '/plugins', '/settings', '/theme',
     '/doctor', '/rules', '/rules debug', '/rules reload', '/rules open', '/rules init',
     '/thinking [on|off]', '/reasoning',
     '/undo'
   ].join('\n'));
+  else if (command === 'new') await cmdNew(loop);
+  else if (command === 'sessions') await cmdSessions(loop);
+  else if (command === 'resume') await cmdResume(loop, rest.join(' '));
+  else if (command === 'history') cmdHistory(loop);
+  else if (command === 'delete-session') await cmdDeleteSession(rest.join(' '), loop);
+  else if (command === 'rename-session') await cmdRenameSession(loop, rest.join(' '));
   else if (command === 'clear') process.stdout.write('\x1Bc');
   else if (command === 'provider') await refreshProvider(loop, await switchProviderPrompt());
   else if (command === 'providers') await showProviders();
@@ -92,13 +106,13 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'symbols' || command === 'symbol') panel('Symbols', await symbolSummary(workspaceRoot(), rest.join(' ')));
   else if (command === 'search' || command === 'grep') panel('Search', await searchWorkspace(workspaceRoot(), rest.join(' ')));
   else if (command === 'find') panel('Find Files', await findFiles(workspaceRoot(), rest.join(' ')));
-  else if (command === 'session') panel('Sessions', (await listSessions()).join('\n') || 'No saved sessions');
+  else if (command === 'session') await cmdSessions(loop);
   else if (command === 'git') panel('Git', await gitSummary(workspaceRoot()));
   else if (command === 'diff') panel('Diff', await diffSummary(workspaceRoot()));
   else if (command === 'commit') panel('Commit Draft', await commitDraft(workspaceRoot()));
   else if (command === 'pr') panel('PR Draft', await prDraft(workspaceRoot()));
   else if (command === 'auto') panel('Autonomous Mode', loop.setAutoMode(rest[0] !== 'off'));
-  else if (command === 'memory' || command === 'history') panel('Memory', sessionMemory(loop.session));
+  else if (command === 'memory') panel('Memory', sessionMemory(loop.session));
   else if (command === 'plugins') panel('Plugins', await pluginSummary(workspaceRoot()));
   else if (command === 'settings') panel('Settings', await renderSettings());
   else if (command === 'theme') panel('Theme', 'Terminal theme follows your shell. Rich theme controls are planned for the interactive UI layer.');

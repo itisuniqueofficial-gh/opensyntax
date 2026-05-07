@@ -109,7 +109,7 @@ program.argument('[prompt...]', 'optional one-shot request')
       panel('Rules Reloaded', next.files.length ? `Reloaded ${next.files.length} OPENSYNTAX.md file${next.files.length === 1 ? '' : 's'}` : 'No OPENSYNTAX.md found.');
     });
     process.once('exit', () => watcher.close());
-    header(workspace, loop.modelName(), config.permission);
+    header(workspace, loop.modelName(), config.permission, session.id, (session as any).title);
     if (rules.files.length) logger.success('Workspace instructions loaded');
     else if (options.debug) logger.status('No workspace instructions found.');
 
