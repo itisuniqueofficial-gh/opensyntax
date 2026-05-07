@@ -382,6 +382,7 @@ Options:
 | `-m, --model <model>` | Override the configured model for this run. |
 | `-p, --provider <provider>` | Override provider: `openai`, `anthropic`, `gemini`, or `openrouter`. |
 | `--permission <level>` | Override permission level for this run. |
+| `--demo` | Start safe demo mode without provider, file changes, or shell commands. |
 | `--session <id>` | Resume a specific saved session. |
 | `-V, --version` | Print the CLI version. |
 | `-h, --help` | Show CLI help. |

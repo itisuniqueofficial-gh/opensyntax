@@ -14,6 +14,7 @@ import {
 } from './store.js';
 import {relativeTime} from './id.js';
 import {printPanel, printSuccess, printError, printWarning} from '../ui/layout.js';
+import {noSessionsState} from '../ui/empty-state.js';
 import type {Session} from './types.js';
 import type {AgentLoop} from '../agent/loop.js';
 
@@ -39,7 +40,7 @@ export async function cmdNew(loop: AgentLoop): Promise<Session> {
 export async function cmdSessions(loop: AgentLoop): Promise<void> {
   const sessions = await listAllSessions();
   if (!sessions.length) {
-    printPanel('Sessions', 'No saved sessions found.');
+    printPanel('Sessions', noSessionsState());
     return;
   }
 
@@ -69,7 +70,7 @@ export async function cmdResume(loop: AgentLoop, sessionId: string): Promise<boo
   if (!sessionId) {
     // Interactive picker
     const sessions = await listAllSessions();
-    if (!sessions.length) { printPanel('Resume', 'No saved sessions.'); return false; }
+    if (!sessions.length) { printPanel('Resume', noSessionsState()); return false; }
 
     const choices = sessions.slice(0, 15).map((s) => ({
       title: `${s.title} ${chalk.gray(s.id)} ${chalk.dim(relativeTime(s.id))}`,

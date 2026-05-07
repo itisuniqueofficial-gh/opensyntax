@@ -26,13 +26,41 @@ import {refreshProviderModels} from '../model/runtime.js';
 import {invalidateModelCache} from '../model/cache.js';
 import {getProviderModels} from '../model/runtime.js';
 import {allModelsForProvider, capabilityBadges} from '../model/registry.js';
+import {runDemoMode} from '../commands/demo.js';
+import {renderHelp} from './help.js';
 
 // ---------------------------------------------------------------------------
 // Onboarding entry point
 // ---------------------------------------------------------------------------
 
 export async function ensureOnboarded(): Promise<boolean> {
-  panel('OpenSyntax', `${chalk.bold('Terminal AI Coding Assistant')}\n\nNo AI providers configured. Connect a provider to continue.`);
+  panel('Welcome to OpenSyntax', [
+    chalk.bold('AI Coding Agent for your terminal.'),
+    '',
+    'Easy setup · Smart defaults · Safe permissions · Advanced coding tools'
+  ].join('\n'));
+
+  const action = (await prompts({
+    type: 'select',
+    name: 'value',
+    message: 'What would you like to do?',
+    choices: [
+      {title: 'Connect AI Provider', value: 'connect', description: 'OpenAI, Claude, Gemini, NVIDIA, local models, and more'},
+      {title: 'Learn OpenSyntax', value: 'learn', description: 'See examples and common commands'},
+      {title: 'Start in Demo Mode', value: 'demo', description: 'Safe exploration mode with no file or shell changes'},
+      {title: 'Exit', value: 'exit'}
+    ]
+  })).value;
+
+  if (action === 'learn') {
+    panel('Learn OpenSyntax', renderHelp());
+    return false;
+  }
+  if (action === 'demo') {
+    runDemoMode();
+    return false;
+  }
+  if (!action || action === 'exit') return false;
 
   // First: offer any detected env keys
   const envKeys = detectEnvKeys();
@@ -62,14 +90,17 @@ export async function ensureOnboarded(): Promise<boolean> {
     }
   }
 
-  return runProviderSetup();
+  return runProviderSetup(undefined, {skipWelcome: true});
 }
 
 // ---------------------------------------------------------------------------
 // Main provider setup wizard
 // ---------------------------------------------------------------------------
 
-export async function runProviderSetup(providerId?: string): Promise<boolean> {
+export async function runProviderSetup(providerId?: string, options: {skipWelcome?: boolean} = {}): Promise<boolean> {
+  if (!options.skipWelcome) {
+    panel('Provider Setup', ['Choose Provider', '→ Choose Login Method', '→ Validate Provider', '→ Select Default Model', '→ Ready'].join('\n'));
+  }
   // Build provider choices grouped by category
   const choices = buildProviderChoices();
   choices.push({title: chalk.gray('Skip for now'), value: 'skip', description: 'Exit setup without connecting a provider'});
