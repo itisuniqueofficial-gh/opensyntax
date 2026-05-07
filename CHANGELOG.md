@@ -1,3 +1,32 @@
+## [0.11.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.11.0...v0.11.1) (2026-05-07)
+
+### Bug Fixes
+
+* add tsconfig paths hint to resolve ui-config.js in language server ([db309e1](https://github.com/itisuniqueofficial-gh/opensyntax/commit/db309e124622abe8762270ba70bda2323b565bfd))
+
+
+# OpenSyntax v0.11.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: add tsconfig paths hint to resolve ui-config.js in language server
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.11.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.10.0...v0.11.0) (2026-05-07)
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "opensyntax",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "Terminal-first AI coding agent with workspace tools, safe edits, git awareness, sessions, and multi-provider LLM support.",
   "license": "MIT",
   "type": "module",
