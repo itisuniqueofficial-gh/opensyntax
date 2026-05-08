@@ -1,3 +1,32 @@
+## [0.18.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.17.1...v0.18.0) (2026-05-08)
+
+### Features
+
+* automate safe workspace edits by default ([bb1c494](https://github.com/itisuniqueofficial-gh/opensyntax/commit/bb1c4941e01f76d175ca96c383523eff413975b1))
+
+
+# OpenSyntax v0.18.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: automate safe workspace edits by default
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.17.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.17.0...v0.17.1) (2026-05-08)
 
 ### Bug Fixes
