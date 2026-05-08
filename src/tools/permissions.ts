@@ -3,7 +3,7 @@
  *
  * Levels:
  *   read-only        — no writes at all
- *   workspace-write  — create/edit files inside workspace; no shell; no deletes without approval
+ *   workspace-write  — create/edit files and run safe workspace commands; no risky shell; no deletes without approval
  *   shell-safe       — workspace-write + safe shell commands
  *   full-access      — all operations; risky ones still prompt
  */
@@ -42,7 +42,7 @@ export function checkPermission(level: PermissionLevel, operation: OperationType
       return {allowed: false, requiresApproval: false, reason: `Current permission level is read-only; ${operation} is not allowed`};
 
     case 'workspace-write':
-      if (operation === 'shell') return {allowed: false, requiresApproval: false, reason: 'Shell execution requires shell-safe or full-access permission'};
+      if (operation === 'shell') return {allowed: true, requiresApproval: false};
       if (operation === 'delete-file' || operation === 'delete-folder') return {allowed: true, requiresApproval: true, reason: 'Delete operations require approval'};
       return {allowed: true, requiresApproval: false};
 
@@ -75,7 +75,7 @@ export function canWrite(level: PermissionLevel): boolean {
 
 /** Check if the permission level allows shell execution. */
 export function canShell(level: PermissionLevel): boolean {
-  return level === 'shell-safe' || level === 'full-access' || level === 'full-os' || level === 'danger';
+  return level === 'workspace-write' || level === 'shell-safe' || level === 'full-access' || level === 'full-os' || level === 'danger';
 }
 
 export function normalizeCommandPermission(level: PermissionLevel | CommandPermissionMode): CommandPermissionMode {

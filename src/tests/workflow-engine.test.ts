@@ -1,4 +1,4 @@
-import {mkdtemp, writeFile} from 'node:fs/promises';
+import {mkdtemp, readFile, writeFile} from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {describe, expect, it} from 'vitest';
@@ -56,6 +56,21 @@ describe('deterministic workflow engine', () => {
     expect(calls).toContain('list_folder');
     expect(calls).toContain('git_status');
     expect(calls).toContain('read_file');
+    expect(calls).toContain('append_to_file');
+  });
+
+  it('can apply a website stylesheet edit through the local workflow', async () => {
+    const dir = await tmp();
+    await writeFile(path.join(dir, 'index.html'), '<main>Hello</main>');
+    await writeFile(path.join(dir, 'styles.css'), 'main { color: red; }');
+    await runDeterministicWorkflow('update the website design', dir, async (call) => {
+      if (call.name === 'append_to_file') {
+        const input = call.arguments as {path: string; content: string};
+        await writeFile(path.join(dir, input.path), `${await readFile(path.join(dir, input.path), 'utf8')}${input.content}`);
+      }
+      return {ok: true, output: 'ok', path: (call.arguments as any).path};
+    });
+    expect(await readFile(path.join(dir, 'styles.css'), 'utf8')).toContain('OpenSyntax responsive design polish');
   });
 
   it('runs package inspection and verification for build fixes', async () => {

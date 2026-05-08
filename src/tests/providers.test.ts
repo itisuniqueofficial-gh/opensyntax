@@ -182,8 +182,8 @@ describe('permission system', () => {
     expect(checkPermission('workspace-write', 'create-file').allowed).toBe(true);
   });
 
-  it('workspace-write blocks shell', () => {
-    expect(checkPermission('workspace-write', 'shell').allowed).toBe(false);
+  it('workspace-write allows safe shell entrypoint', () => {
+    expect(checkPermission('workspace-write', 'shell').allowed).toBe(true);
   });
 
   it('workspace-write requires approval for delete', () => {
@@ -215,8 +215,8 @@ describe('permission system', () => {
     expect(canWrite('workspace-write')).toBe(true);
   });
 
-  it('canShell returns false for workspace-write', () => {
-    expect(canShell('workspace-write')).toBe(false);
+  it('canShell returns true for workspace-write safe commands', () => {
+    expect(canShell('workspace-write')).toBe(true);
     expect(canShell('shell-safe')).toBe(true);
     expect(canShell('full-access')).toBe(true);
   });

@@ -39,7 +39,7 @@ export async function detectWorkspace(workspace: string): Promise<WorkspaceDetec
 }
 
 function findWebsiteFiles(files: string[]): string[] {
-  return files.filter((file) => /(^|\/)(index|home|app|main)\.(html|css|tsx|jsx|vue)$|(^|\/)assets\/css\/.*\.css$|(^|\/)styles?\/.+\.css$|^docs\/.*\.(html|css|js)$|^src\/.*\.(css|scss|tsx|jsx|vue)$/.test(file)).slice(0, 80);
+  return files.filter((file) => /(^|\/)(index|home|app|main|style|styles)\.(html|css|tsx|jsx|vue)$|(^|\/)assets\/css\/.*\.css$|(^|\/)styles?\/.*\.css$|^docs\/.*\.(html|css|js)$|^src\/.*\.(css|scss|tsx|jsx|vue)$/.test(file)).slice(0, 80);
 }
 
 function classify(files: string[], deps: Record<string, unknown>, websiteFiles: string[]): WorkspaceDetection['kind'] {

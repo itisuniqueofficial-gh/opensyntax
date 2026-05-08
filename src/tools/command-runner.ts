@@ -73,7 +73,7 @@ async function resolveCommandCwd(context: ToolContext, cwd?: string): Promise<st
 async function enforceCommandPermission(input: CommandExecutionInput, context: ToolContext, mode: CommandPermissionMode, cwd: string, risk: CommandRiskResult): Promise<void> {
   if (mode === 'read-only' && risk.risk !== 'read') throw new Error(`Command blocked by read-only permission: ${input.command}`);
   if (mode === 'workspace-safe' && !['read', 'safe'].includes(risk.risk)) throw new Error(`Command requires workspace-write or higher permission: ${input.command}`);
-  if (mode === 'workspace-write' && ['network', 'git-write', 'system-write', 'destructive', 'dangerous'].includes(risk.risk)) throw new Error(`Command requires shell-safe or approval: ${input.command}`);
+  if (mode === 'workspace-write' && ['install', 'network', 'git-write', 'system-write', 'destructive', 'dangerous'].includes(risk.risk)) throw new Error(`Command requires shell-safe or approval: ${input.command}`);
   if (risk.fullOsRequired && mode !== 'full-os' && mode !== 'danger') {
     const approved = await context.askPermission({tool: 'execute_command', path: path.relative(context.workspace, cwd) || '.', action: input.command, reason: `${input.reason}\n\nThis may modify your system.`, risk: 'high'});
     if (!approved) throw new Error('Full OS command cancelled by user');

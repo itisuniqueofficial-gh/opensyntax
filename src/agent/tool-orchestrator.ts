@@ -39,6 +39,9 @@ function operationLabel(name: string, result: ToolResult): string {
   if (name === 'list_folder') return 'listed workspace files';
   if (name === 'git_status') return 'checked git status';
   if (name === 'read_file') return `read ${result.path ?? 'file'}`;
+  if (name === 'append_to_file' || name === 'patch_file' || name === 'replace_in_file') return `updated ${result.path ?? 'file'}`;
+  if (name === 'create_file') return `created ${result.path ?? 'file'}`;
+  if (name === 'create_folder') return `created folder ${result.path ?? ''}`.trim();
   if (name === 'search_files') return 'searched workspace files';
   if (name === 'verify_workspace') return result.ok ? 'verification passed' : 'verification completed with failures';
   return `${name} completed`;

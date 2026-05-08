@@ -173,4 +173,16 @@ describe('tools', () => {
     ctx.rules = {...ctx.rules!, files: [], effectiveBullets: [], restrictions: [], shellRules: ['Use bun only.'], testingRules: [], forbiddenPaths: [], ignoredFiles: [], prompt: '', tokenEstimate: 0, debug: '', loadedAt: new Date().toISOString()};
     await expect(executeCommandTool.execute({command: 'npm install', intent: 'install deps', timeoutMs: 1000}, ctx)).rejects.toThrow('Workspace rules prohibit npm commands');
   });
+
+  it('allows safe verification commands in workspace-write mode', async () => {
+    const ctx = await context('workspace-write');
+    const result = await executeCommandTool.execute({command: 'node --version', intent: 'check node', timeoutMs: 5000}, ctx);
+    expect(result.ok).toBe(true);
+    expect(ctx.approvals).toHaveLength(0);
+  });
+
+  it('blocks risky shell commands in workspace-write mode', async () => {
+    const ctx = await context('workspace-write');
+    await expect(executeCommandTool.execute({command: 'npm install', intent: 'install deps', timeoutMs: 1000}, ctx)).rejects.toThrow(/requires shell-safe|approval/);
+  });
 });

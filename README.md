@@ -306,13 +306,13 @@ Supported provider values:
 
 Supported permission levels:
 
-The default is `workspace-write`: OpenSyntax can make safe, reviewable workspace edits, but shell commands and destructive actions still require stricter permissions or approval.
+The default is `workspace-write`: OpenSyntax can make safe, reviewable workspace edits and run safe workspace verification commands. Destructive, install, network, git-write, or full OS actions still require stricter permissions or approval.
 
 | Level | Allowed | Requires Approval | Blocked |
 | --- | --- | --- | --- |
 | `read-only` | Read files, list folders, search files, `git_status`, `git_diff`. | None. | File/folder writes, deletes, moves, copies, and modifying shell commands. |
-| `workspace-write` | Create/edit/patch files, create folders, copy/move/rename files and folders inside the workspace. | Overwrites, deletes, recursive operations, lockfiles, `.env`, and secret-looking paths. | Outside-workspace edits, `.git`, workspace root, home/system folders, shell execution. |
-| `shell-safe` | `workspace-write` tools plus safe shell commands. | Package installs, side-effectful builds, deletes, `git reset/clean`, `chmod/chown`, Docker prune. | Silent destructive shell operations. |
+| `workspace-write` | Create/edit/patch files, create folders, copy/move/rename files and folders inside the workspace, and run safe commands such as build/test/typecheck/lint. | Overwrites, deletes, recursive operations, lockfiles, `.env`, secret-looking paths, installs, network commands, and git writes. | Outside-workspace edits, `.git`, workspace root, home/system folders, destructive shell operations. |
+| `shell-safe` | `workspace-write` tools plus broader developer shell commands. | Package installs, side-effectful builds, deletes, `git reset/clean`, `chmod/chown`, Docker prune. | Silent destructive shell operations. |
 | `full-access` | Broadest workspace and shell capability. | All destructive or sensitive actions still require explicit approval. | Hard blocks such as deleting `.git`, workspace root, home, or OS folders. |
 
 ### Environment Variables
@@ -636,7 +636,7 @@ Terminal permission modes:
 | --- | --- |
 | `read-only` | Allows read-only commands such as `dir`, `ls`, `cat`, `type`, `git status`, `git diff`, and version checks. |
 | `workspace-safe` | Allows tests, builds, lint, typecheck, git read operations, and package-manager read operations. |
-| `workspace-write` | Allows workspace-generating commands and dependency installs with approval. |
+| `workspace-write` | Allows safe workspace verification commands such as build, test, lint, and typecheck; blocks installs, network, git writes, destructive commands, and full OS actions. |
 | `shell-safe` | Allows normal developer commands; prompts for installs, network, unknown write, and risky commands. |
 | `full-os` | Requires explicit approval for OS-level commands such as `apt install`, `winget install`, `brew install`, `systemctl`, `netsh`, or `setx`. |
 | `danger` | Requires typed confirmation for destructive commands such as `rm -rf`, `Remove-Item -Recurse -Force`, `git reset --hard`, `git clean -fd`, `format`, `diskpart`, `mkfs`, or `docker system prune`. |
