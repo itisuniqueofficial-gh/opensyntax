@@ -6,10 +6,12 @@ import {createModelProvider} from '../agent/orchestrator.js';
 import {workspaceRoot} from '../utils/paths.js';
 import {findModel, capabilityBadges} from '../model/registry.js';
 import {getThinkingConfig} from '../ui/thinking.js';
+import {defaultRegistry} from '../tools/registry.js';
+import {modelSupportsTools} from '../model/validation.js';
 
 export async function runDoctor(): Promise<string> {
-  const [git, provider, workspace] = await Promise.all([checkGit(), checkProvider(), checkWorkspace()]);
-  return [workspace, `Node.js: ${process.version}`, git, provider].join('\n');
+  const [git, provider, workspace, tools] = await Promise.all([checkGit(), checkProvider(), checkWorkspace(), checkTools()]);
+  return [workspace, `Node.js: ${process.version}`, git, tools, provider].join('\n');
 }
 
 async function checkWorkspace(): Promise<string> {
@@ -19,10 +21,17 @@ async function checkWorkspace(): Promise<string> {
   return [
     `Workspace: ${root}`,
     `Permission mode: ${config.permission}`,
+    `Deterministic fallback: ${chalk.green('enabled')}`,
     `Thinking display: ${thinking.enabled ? chalk.green('on') : chalk.red('off')}`,
     `Reasoning summary: ${thinking.showReasoningSummary ? chalk.green('on') : chalk.red('off')}`,
     `Model fallback: ${config.modelFallback ? chalk.green('on') : chalk.red('off')}`
   ].join('\n');
+}
+
+async function checkTools(): Promise<string> {
+  const names = defaultRegistry.names();
+  const required = ['list_folder', 'read_file', 'patch_file', 'execute_command', 'git_status', 'git_diff', 'git_log', 'verify_workspace'];
+  return ['', 'Tools:', ...required.map((name) => `${names.includes(name) ? chalk.green('✓') : chalk.red('✗')} ${name}`)].join('\n');
 }
 
 async function checkProvider(): Promise<string> {
@@ -33,12 +42,15 @@ async function checkProvider(): Promise<string> {
   const chat = await chatTest(config);
   const modelEntry = findModel(config.provider, config.model);
   const badges = modelEntry ? capabilityBadges(modelEntry).join(', ') : 'unknown';
+  const toolsSupported = modelSupportsTools(config.provider, config.model);
   return [
     '',
     `Provider: ${config.providerName ?? config.provider}`,
     `Provider ID: ${config.provider}`,
     `Model: ${config.model}`,
     `Model capabilities: ${badges}`,
+    `${toolsSupported ? chalk.green('✓') : chalk.red('✗')} Native tool calling: ${toolsSupported ? 'available' : 'unavailable'}`,
+    `${chalk.green('✓')} Deterministic fallback: enabled`,
     `Base URL: ${config.baseUrl ?? 'provider default'}`,
     `API Key: ${config.apiKey ? 'configured' : 'not required or missing'}`,
     `${health.ok ? chalk.green('✓') : chalk.red('✗')} Models: ${health.message}`,

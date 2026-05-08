@@ -2,7 +2,7 @@ import type {AppConfig} from '../config/config.js';
 import type {ChatMessage, ToolCall} from '../model/types.js';
 import type {SessionRecord} from '../session/history.js';
 import {saveSession} from '../session/store.js';
-import {maybeSetTitle} from '../session/store.js';
+import {maybeSetTaskTitle, maybeSetTitle} from '../session/store.js';
 import {newMessageId, newToolCallId} from '../session/id.js';
 import type {Session, MessageRecord, ToolCallRecord} from '../session/types.js';
 import {defaultRegistry, type ToolRegistry} from '../tools/registry.js';
@@ -17,6 +17,9 @@ import {systemPrompt} from './prompts.js';
 import {buildWorkspaceContext, verificationCommandsForWorkspace} from './context.js';
 import {syncTodosFromPlan, updateTodoState} from './tasks.js';
 import {createVerificationPlan} from './verification.js';
+import {classifyTask} from './task-classifier.js';
+import {noToolGuardMessage, runDeterministicWorkflow} from './workflow-engine.js';
+import type {DeterministicToolCall} from './tool-orchestrator.js';
 import {assistantChunk, panel, status} from '../ui/renderer.js';
 import {printToolStart, printToolEnd, printToolError, printSessionStatusBar} from '../ui/layout.js';
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
@@ -71,6 +74,7 @@ export class AgentLoop {
   setAutoMode(enabled: boolean) { this.autoMode = enabled; return enabled ? 'Autonomous mode enabled. I will continue tool-assisted workflows until completion while still asking approval for risky actions.' : 'Autonomous mode disabled.'; }
 
   async run(request: string): Promise<void> {
+    const classifiedTask = classifyTask(request);
     const workflow = autonomousPlan(request);
     this.session.plan = workflow.plan;
     this.session.plan = startPlan(this.session.plan, this.session.plan[0]?.id ?? 'inspect');
@@ -89,6 +93,7 @@ export class AgentLoop {
 
     // Auto-title the session from the first user message
     maybeSetTitle(this.session, request);
+    maybeSetTaskTitle(this.session, request);
 
     // Add user message with unique ID
     const userMsg: MessageRecord = {
@@ -99,6 +104,21 @@ export class AgentLoop {
       createdAt: new Date().toISOString()
     };
     this.session.messages.push(userMsg);
+
+    let deterministicToolCount = 0;
+    if (classifiedTask.requiresTools) {
+      const deterministic = await runDeterministicWorkflow(request, this.workspace, async (call) => {
+        deterministicToolCount++;
+        return this.executeDeterministicTool(call);
+      });
+      if (deterministic.summary) {
+        this.session.messages.push({id: newMessageId(), sessionId: this.session.id, role: 'tool', content: deterministic.summary.slice(0, 12000), toolCallId: `deterministic_${Date.now()}`, createdAt: new Date().toISOString()});
+      }
+      if (deterministic.task.requiresTools && deterministic.toolResults.length === 0 && !deterministic.detection?.empty) {
+        panel('Agent Runtime', noToolGuardMessage(request));
+      }
+      await saveSession(this.session);
+    }
 
     // Show thinking progress
     showThinkingStep('understanding');
@@ -171,6 +191,7 @@ export class AgentLoop {
       this.session.messages.push(assistantMsg);
 
       if (toolCalls.length === 0) {
+        if (classifiedTask.requiresTools && deterministicToolCount === 0) panel('Agent Runtime', noToolGuardMessage(request));
         if (!assistantText.trim()) this.showEmptyResponseHelp();
         break;
       }
@@ -242,6 +263,13 @@ export class AgentLoop {
     return result.ok;
   }
 
+  private async executeDeterministicTool(call: DeterministicToolCall) {
+    const toolCall: ToolCall = {id: `det_${newToolCallId()}`, name: call.name, arguments: call.arguments};
+    await this.executeTool(toolCall);
+    const latest = this.session.toolCalls[this.session.toolCalls.length - 1];
+    return {ok: latest?.ok ?? false, output: latest?.output ?? '', changed: false};
+  }
+
   private showEmptyResponseHelp(): void {
     panel('No Assistant Response', [
       `No assistant response received from ${this.providerName()}.`,
@@ -270,7 +298,7 @@ async function availableModelIds(providerId: string): Promise<string[]> {
 // ---------------------------------------------------------------------------
 
 function shouldEnableTools(request: string): boolean {
-  return /\b(file|files|repo|repository|workspace|code|edit|fix|refactor|run|command|shell|test|build|lint|typecheck|git|diff|commit|read|search|find|create|write|delete|install)\b/i.test(request);
+  return /\b(file|files|repo|repository|workspace|code|edit|fix|refactor|run|command|shell|test|build|lint|typecheck|git|diff|commit|read|search|find|create|write|delete|install|website|design|style|css|responsive|ui|ux)\b/i.test(request);
 }
 
 function isModelUnavailableError(message: string): boolean {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import {configDir} from '../config/config.js';
 import {ensureDir} from '../utils/paths.js';
 import {newSessionId} from './id.js';
-import {generateTitle} from './titles.js';
+import {generateTaskTitle, generateTitle, shouldReplaceTitle} from './titles.js';
 import type {Session, MessageRecord, ToolCallRecord} from './types.js';
 // Keep backward-compat re-export for old code that imports SessionRecord
 import type {SessionRecord} from './history.js';
@@ -123,5 +123,11 @@ async function latestSessionForWorkspace(workspace: string): Promise<Session | u
 export function maybeSetTitle(session: Session, firstUserMessage: string): void {
   if (session.title === 'New Chat' && firstUserMessage.trim()) {
     session.title = generateTitle(firstUserMessage);
+  }
+}
+
+export function maybeSetTaskTitle(session: Session, userMessage: string): void {
+  if (shouldReplaceTitle(session.title) && userMessage.trim()) {
+    session.title = generateTaskTitle(userMessage);
   }
 }

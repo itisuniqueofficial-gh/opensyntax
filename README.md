@@ -258,6 +258,10 @@ OpenSyntax includes read-only repository intelligence commands that help the age
 
 Autonomous mode does not bypass safety. Risky shell commands, destructive git operations, external path access, and secret exposure protections still require approval or remain blocked. For requests like `fix all TypeScript errors`, OpenSyntax now plans the workflow, injects workspace context, suggests the correct validation command for the detected package manager, updates task state, and reflects failed tool calls back into the session plan.
 
+Coding tasks run a deterministic local bootstrap before the model responds. That means requests like `update the website design`, `fix build errors`, or `explain this repo` always inspect the workspace with real tools even if the active provider does not support native tool calling. The bootstrap classifies the task, detects workspace type, lists files, checks git status, reads high-signal files, and runs verification when appropriate.
+
+If OpenSyntax cannot execute any tool for a coding task, it shows a runtime warning and suggests `/doctor` instead of ending with a fake "I'll inspect" response.
+
 The autonomous architecture follows this loop:
 
 ```txt
