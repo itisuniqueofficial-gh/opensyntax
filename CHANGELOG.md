@@ -1,3 +1,32 @@
+## [0.19.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.18.0...v0.19.0) (2026-05-08)
+
+### Features
+
+* add terminal shortcuts and interrupt controls ([3fff98d](https://github.com/itisuniqueofficial-gh/opensyntax/commit/3fff98db9cff4e5c95e4871d690de187fd1f65c4))
+
+
+# OpenSyntax v0.19.0
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- feat: add terminal shortcuts and interrupt controls
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.18.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.17.1...v0.18.0) (2026-05-08)
 
 ### Features
