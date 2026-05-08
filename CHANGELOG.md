@@ -1,3 +1,32 @@
+## [0.17.1](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.17.0...v0.17.1) (2026-05-08)
+
+### Bug Fixes
+
+* force deterministic tool workflows for coding tasks ([823ee7a](https://github.com/itisuniqueofficial-gh/opensyntax/commit/823ee7a80c7c4cb4ef867324a1285c01352ed8ba))
+
+
+# OpenSyntax v0.17.1
+
+## Summary
+This release includes 1 validated change for the OpenSyntax terminal AI coding agent.
+
+## Changes
+- fix: force deterministic tool workflows for coding tasks
+
+## Installation
+```bash
+npm install -g opensyntax
+```
+
+## Upgrade
+```bash
+npm update -g opensyntax
+```
+
+## Links
+- NPM package: https://www.npmjs.com/package/opensyntax
+- GitHub repository: https://github.com/itisuniqueofficial-gh/opensyntax
+
 ## [0.17.0](https://github.com/itisuniqueofficial-gh/opensyntax/compare/v0.16.0...v0.17.0) (2026-05-07)
 
 ### Features
