@@ -443,6 +443,11 @@ Inside the interactive terminal session, use slash commands for fast control:
 | `/models` | List discovered models for the active provider. |
 | `/tools` | List registered tools available to the agent. |
 | `/plan` | Show the current task plan and progress state. |
+| `/thinking on` / `/thinking off` | Toggle visible safe progress steps. |
+| `/reasoning` | Toggle safe reasoning summaries. Hidden chain-of-thought is never shown. |
+| `/shortcuts` | Show keyboard shortcuts and current raw-mode support. |
+| `/command-palette [query]` | Search slash commands from a command palette view. |
+| `/interrupt` or `/cancel` | Cancel the active agent run and save partial progress. |
 | `/session` | List saved local sessions. |
 | `/diff` | Ask the agent to inspect and summarize the current git diff. |
 | `/auth` | Show connected authentication state. |
@@ -450,6 +455,14 @@ Inside the interactive terminal session, use slash commands for fast control:
 | `/logout` | Remove stored provider credentials. |
 | `/undo` | Show the safe reversal workflow. OpenSyntax does not run destructive undo automatically. |
 | `/exit` | Exit the interactive session. |
+
+OpenSyntax shows safe progress summaries by default, such as `Understanding request`, `Finding relevant files`, `Applying patch`, and `Verifying result`. It does not expose hidden chain-of-thought.
+
+Interrupt behavior:
+
+- `Ctrl+C` from the terminal interrupts the active process.
+- `/interrupt` and `/cancel` abort the current agent controller and save partial session state.
+- Raw `Esc`, `Ctrl+P`, and advanced line-editing shortcuts are registered in `/shortcuts`; full raw-mode key handling is planned for the upcoming fullscreen input loop.
 
 ## Example Workflows
 

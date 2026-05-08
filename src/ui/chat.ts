@@ -30,6 +30,9 @@ import {commandForScript, renderScripts} from '../commands/scripts.js';
 import {executeCommandTool} from '../tools/shell.js';
 import {verifyWorkspaceTool} from '../tools/verification.js';
 import {renderHelp} from '../commands/help.js';
+import {renderShortcuts} from '../commands/shortcuts.js';
+import {renderCommandPalette} from '../commands/command.js';
+import {globalInterrupt} from '../agent/interrupt.js';
 
 export async function runInteractive(loop: AgentLoop): Promise<void> {
   while (true) {
@@ -48,6 +51,7 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   const [command, ...rest] = input.slice(1).split(/\s+/);
   if (command === 'exit') return true;
   if (command === 'help') panel('Help', renderHelp(rest.join(' ')));
+  else if (command === 'shortcuts') panel('Shortcuts', renderShortcuts());
   else if (command === 'new') await cmdNew(loop);
   else if (command === 'sessions') await cmdSessions(loop);
   else if (command === 'resume') await cmdResume(loop, rest.join(' '));
@@ -124,7 +128,9 @@ async function handleCommand(input: string, loop: AgentLoop): Promise<boolean> {
   else if (command === 'scripts') panel('Scripts', await renderScripts(workspaceRoot()));
   else if (command === 'run') await runScript(rest.join(' '), loop);
   else if (command === 'verify') await verifyWorkspace(rest.join(' '), loop);
+  else if (command === 'command-palette' || (command === 'command' && !rest.join(' ').trim())) panel('Command Palette', renderCommandPalette(rest.join(' ')));
   else if (command === 'command') panel('Command Risk', renderCommandRisk(rest.join(' ')));
+  else if (command === 'interrupt' || command === 'cancel') await globalInterrupt.interrupt(loop.session);
   else if (command === 'env') panel('Environment', await renderEnv());
   else if (command === 'path') panel('PATH', renderPath());
   else if (command === 'rules') await handleRules(rest, loop);

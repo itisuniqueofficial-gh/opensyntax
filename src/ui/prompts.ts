@@ -7,6 +7,11 @@ export async function promptUser(message = '> '): Promise<string | undefined> {
     name: 'value',
     message,
     suggest: (input: string) => input.startsWith('/') ? Promise.resolve(suggestSlashCommands(input)) : Promise.resolve([])
-  } as any);
+  } as any, {
+    onCancel: () => {
+      process.stdout.write('Interrupted by user. Partial progress saved.\n');
+      return false;
+    }
+  });
   return typeof response.value === 'string' ? response.value : undefined;
 }

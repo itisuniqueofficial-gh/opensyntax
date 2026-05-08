@@ -115,7 +115,7 @@ program.argument('[prompt...]', 'optional one-shot request')
     const config = await resolveModelConfig(loaded, options.provider);
     // Apply thinking config from saved settings
     setThinkingEnabled(loaded.thinkingDisplay ?? true);
-    setReasoningSummaryEnabled(loaded.showReasoningSummary ?? false);
+    setReasoningSummaryEnabled(loaded.showReasoningSummary ?? true);
     // Apply UI rendering config
     applyAppConfig(loaded);
     const session = await loadOrCreateSession(workspace, options.session);

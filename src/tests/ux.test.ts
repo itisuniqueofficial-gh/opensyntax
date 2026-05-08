@@ -28,7 +28,8 @@ describe('user experience helpers', () => {
 
   it('defaults to beginner-friendly workspace write permissions', () => {
     expect(defaultConfig.permission).toBe('workspace-write');
-    expect(defaultConfig.shellMode).toBe('workspace-write');
+    expect(defaultConfig.shellMode).toBe('shell-safe');
+    expect(defaultConfig.showReasoningSummary).toBe(true);
   });
 
   it('renders friendly empty states', () => {

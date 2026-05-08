@@ -20,6 +20,7 @@ import {createVerificationPlan} from './verification.js';
 import {classifyTask} from './task-classifier.js';
 import {noToolGuardMessage, runDeterministicWorkflow} from './workflow-engine.js';
 import type {DeterministicToolCall} from './tool-orchestrator.js';
+import {globalInterrupt} from './interrupt.js';
 import {assistantChunk, panel, status} from '../ui/renderer.js';
 import {printToolStart, printToolEnd, printToolError, printSessionStatusBar} from '../ui/layout.js';
 import {showThinkingStep, showToolDecision} from '../ui/thinking.js';
@@ -74,6 +75,7 @@ export class AgentLoop {
   setAutoMode(enabled: boolean) { this.autoMode = enabled; return enabled ? 'Autonomous mode enabled. I will continue tool-assisted workflows until completion while still asking approval for risky actions.' : 'Autonomous mode disabled.'; }
 
   async run(request: string): Promise<void> {
+    const signal = globalInterrupt.reset();
     const classifiedTask = classifyTask(request);
     const workflow = autonomousPlan(request);
     this.session.plan = workflow.plan;
@@ -108,6 +110,7 @@ export class AgentLoop {
     let deterministicToolCount = 0;
     if (classifiedTask.requiresTools) {
       const deterministic = await runDeterministicWorkflow(request, this.workspace, async (call) => {
+        if (signal.aborted) throw new Error('Interrupted by user');
         deterministicToolCount++;
         return this.executeDeterministicTool(call);
       });
@@ -148,6 +151,7 @@ export class AgentLoop {
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens
         })) {
+          if (signal.aborted) throw new Error('Interrupted by user');
           if (event.type === 'text') {
             assistantText += event.text;
             const rendered = streamRenderer.feed(event.text);
@@ -223,10 +227,11 @@ export class AgentLoop {
   private async executeTool(call: ToolCall): Promise<boolean> {
     const startMs = Date.now();
     printToolStart(call.name, call.arguments);
-    const context: ToolContext = {
-      workspace: this.workspace,
-      permission: this.config.permission,
-      rules: this.rules,
+      const context: ToolContext = {
+        workspace: this.workspace,
+        permission: this.config.permission,
+        signal: globalInterrupt.signal,
+        rules: this.rules,
       log: (message) => process.stdout.write(message.endsWith('\n') ? message : `${message}\n`),
       askPermission
     };

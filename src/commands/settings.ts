@@ -83,7 +83,7 @@ export async function renderSettings(): Promise<string> {
     `Temperature:       ${config.temperature}`,
     `Max tokens:        ${config.maxTokens}`,
     `Thinking display:  ${config.thinkingDisplay ? 'on' : 'off'}`,
-    `Reasoning summary: ${config.showReasoningSummary ? 'on' : 'off'}`,
+    `Reasoning summary: ${config.showReasoningSummary ? 'on' : 'off'} (safe summaries only)`,
     `Model fallback:    ${config.modelFallback ? 'on' : 'off'}`,
     `Show tool summary: ${config.showToolSummary ? 'on' : 'off'}`,
     '',
