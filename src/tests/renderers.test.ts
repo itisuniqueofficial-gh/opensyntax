@@ -138,7 +138,7 @@ describe('markdown renderer', () => {
   it('renders fenced code block as codebox', () => {
     const out = renderMarkdown('```typescript\nconst x = 1;\n```');
     expect(out).toContain('╭');
-    expect(out).toContain('const x = 1;');
+    expect(stripAnsi(out)).toContain('const x = 1;');
   });
 
   it('renders diff code block', () => {

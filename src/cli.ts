@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import {Command} from 'commander';
+import {createRequire} from 'node:module';
 import {loadConfig, saveConfig} from './config/config.js';
 import {loadOrCreateSession} from './session/store.js';
 import {workspaceRoot} from './utils/paths.js';
@@ -24,11 +25,13 @@ import {renderTerminal} from './commands/terminal.js';
 import {renderPermissions} from './commands/permissions.js';
 import {runDemoMode} from './commands/demo.js';
 
+const {version} = createRequire(import.meta.url)('../package.json') as {version: string};
+
 const program = new Command()
   .name('opensyntax')
   .alias('agent')
   .description('Terminal AI coding agent')
-  .version('0.3.0')
+  .version(version)
   .option('-m, --model <model>', 'override model')
   .option('-p, --provider <provider>', 'openai, anthropic, gemini, openrouter, groq, together, nvidia, deepseek, mistral, ollama, lmstudio, or azure-openai')
   .option('--permission <level>', 'read-only, workspace-safe, workspace-write, shell-safe, full-os, or danger')

@@ -34,7 +34,9 @@ const configSchema = z.object({
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
-export const configDir = path.join(os.homedir(), '.opensyntax');
+export const configDir = process.env.OPENSYNTAX_CONFIG_DIR
+  ? path.resolve(process.env.OPENSYNTAX_CONFIG_DIR)
+  : path.join(os.homedir(), '.opensyntax');
 export const configPath = path.join(configDir, 'config.json');
 
 export async function loadConfig(overrides: Partial<AppConfig> = {}): Promise<AppConfig> {

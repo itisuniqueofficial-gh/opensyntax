@@ -17,6 +17,10 @@ import {renderCodebox, renderDiff} from '../ui/renderers/codebox.js';
 import {renderMarkdown} from '../ui/renderers/markdown.js';
 import {renderStatusBar} from '../ui/panels/status-bar.js';
 
+// Strip ANSI escape codes so assertions can check highlighted code content.
+// eslint-disable-next-line no-control-regex
+const stripAnsi = (s: string): string => s.replace(/\x1B\[[0-9;]*m/g, '');
+
 // ---------------------------------------------------------------------------
 // ID generation
 // ---------------------------------------------------------------------------
@@ -131,7 +135,7 @@ describe('codebox renderer', () => {
     const output = renderCodebox('const x = 1;', {language: 'typescript'});
     expect(output).toContain('╭');
     expect(output).toContain('╰');
-    expect(output).toContain('const x = 1;');
+    expect(stripAnsi(output)).toContain('const x = 1;');
   });
 
   it('renders with a label in the top border', () => {
@@ -175,7 +179,7 @@ describe('markdown renderer', () => {
   it('renders code blocks as codeboxes', () => {
     const output = renderMarkdown('```typescript\nconst x = 1;\n```');
     expect(output).toContain('╭');
-    expect(output).toContain('const x = 1;');
+    expect(stripAnsi(output)).toContain('const x = 1;');
   });
 
   it('renders unordered lists', () => {
